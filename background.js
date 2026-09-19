@@ -269,6 +269,14 @@ async function handle(msg) {
         await readyTimer(state, 'focus');
         return state;
       });
+    case 'fitWindow': {
+      // {windowId, width, height, left, top} — sizes are outer sizes computed by the page.
+      const w = msg.windowId;
+      if (w == null || !api.windows) return { ok: false };
+      const patch = {};
+      for (const k of ['width', 'height', 'left', 'top']) if (Number.isFinite(msg[k])) patch[k] = Math.max(0, Math.round(msg[k]));
+      try { await api.windows.update(w, patch); return { ok: true }; } catch (e) { return { ok: false, error: String(e) }; }
+    }
     case 'onboarded':
       return withState(async (state) => { state.onboarded = true; return state; });
     case 'reset':
@@ -288,6 +296,40 @@ api.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   handle(msg).then(sendResponse, (err) => sendResponse({ error: String(err && err.message || err) }));
   return true; // keep the channel open for the async response
 });
+
+// ---- mini window --------------------------------------------------------------
+// Clicking the toolbar icon opens (or focuses) a small always-available window
+// with the arena. The page itself parks the window in the top-right corner
+// because only a page knows the screen size.
+
+const MINI_URL = api.runtime.getURL('popup.html');
+const MINI = { width: 384, height: 300 };
+
+async function findMiniWindow() {
+  try {
+    const wins = await api.windows.getAll({ populate: true });
+    for (const w of wins) {
+      if (w.type !== 'popup' || !w.tabs) continue;
+      if (w.tabs.some(t => (t.url || t.pendingUrl || '').startsWith(MINI_URL))) return w;
+    }
+  } catch (e) { /* no windows API */ }
+  return null;
+}
+
+async function openMini() {
+  const existing = await findMiniWindow();
+  if (existing) {
+    try { await api.windows.update(existing.id, { focused: true, drawAttention: true }); return; } catch (e) { /* fallthrough */ }
+  }
+  try {
+    await api.windows.create({ url: MINI_URL, type: 'popup', width: MINI.width, height: MINI.height, focused: true });
+  } catch (e) {
+    // No windows API (e.g. some mobile browsers): fall back to a tab.
+    await api.tabs.create({ url: MINI_URL });
+  }
+}
+
+if (api.action && api.action.onClicked) api.action.onClicked.addListener(() => { openMini(); });
 
 // ---- distraction shield -----------------------------------------------------
 

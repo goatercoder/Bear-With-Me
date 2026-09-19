@@ -7,9 +7,11 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def load_sprite(name='osci'):
     src = open(os.path.join(ROOT, 'sprites.js'), encoding='utf-8').read()
-    block = re.search(name + r":\s*\{(.*?)\n\s*\},", src, re.S).group(1)
+    block = src[src.index(name + ': {'):]
     palette = dict(re.findall(r"(\w):\s*'(#[0-9a-fA-F]{6})'", re.search(r"palette:\s*\{(.*?)\}", block).group(1)))
-    rows = re.findall(r"'([.\w]{16})'", re.search(r"rows:\s*\[(.*?)\]", block, re.S).group(1))
+    # icons use the classic 'Osci Bear' stage (the second evolution)
+    stage = block[block.index("name: 'Osci Bear'"):]
+    rows = re.findall(r"'([.\w]{16})'", re.search(r"rows:\s*\[(.*?)\]", stage, re.S).group(1))
     assert len(rows) == 16, rows
     return palette, rows
 

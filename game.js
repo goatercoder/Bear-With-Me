@@ -40,7 +40,10 @@
     setContext(c) {
       const prev = this.ctx_;
       this.ctx_ = Object.assign({}, prev, c);
-      if (prev.level !== undefined && c.level > prev.level) this.celebrate(`LEVEL ${c.level}!`);
+      if (prev.level !== undefined && c.level > prev.level) {
+        const evolved = Sprites.stageFor(this.ctx_.avatar, c.level).index > Sprites.stageFor(prev.avatar, prev.level).index && prev.avatar === this.ctx_.avatar;
+        this.celebrate(evolved ? 'EVOLVED!' : `LEVEL ${c.level}!`);
+      }
       if (!this.ctx_.running || this.ctx_.mode !== 'focus') { this.bossActive = false; }
       if (!this.ctx_.alive) { this.monsters = []; this.bullets = []; }
     }
@@ -91,7 +94,7 @@
 
     shoot(target) {
       const st = this.stats;
-      const sprite = Sprites.PETS[this.ctx_.avatar] || Sprites.PETS.osci;
+      const sprite = Sprites.petSprite(this.ctx_.avatar, this.ctx_.level);
       const n = st.bullets;
       for (let i = 0; i < n; i++) {
         const off = (i - (n - 1) / 2) * 0.12;
@@ -200,7 +203,7 @@
         const sz = s.z > 1 ? 2 : 1; c.fillRect(s.x, s.y, sz, sz);
       }
 
-      const sprite = Sprites.PETS[this.ctx_.avatar] || Sprites.PETS.osci;
+      const sprite = Sprites.petSprite(this.ctx_.avatar, this.ctx_.level);
       const bobAmp = this.ctx_.mode !== 'focus' && this.ctx_.alive ? 3 : 1.5;
       const bobY = Math.sin(this.time / 400) * bobAmp * u;
 
@@ -231,8 +234,9 @@
         const recoil = (pet.recoil || 0) > 0 ? -u * 0.5 : 0;
         if (pet.hitFlash > 0 && Math.floor(this.time / 60) % 2 === 0) c.globalAlpha = 0.5;
         if (low) c.filter = 'saturate(0.35) brightness(0.9)';
+        if (sprite.glow) { c.shadowColor = sprite.glow; c.shadowBlur = 6 * u * (0.7 + 0.3 * Math.sin(this.time / 500)); }
         c.drawImage(img, Math.round(pet.x - 8 * u + recoil), Math.round(pet.y - 8 * u + bobY));
-        c.filter = 'none'; c.globalAlpha = 1;
+        c.shadowBlur = 0; c.filter = 'none'; c.globalAlpha = 1;
         if (low && Math.floor(this.time / 700) % 2 === 0) this.text('?', pet.x + 9 * u, pet.y - 9 * u, '#ff7b7b', false);
         if (this.ctx_.mode !== 'focus' && this.ctx_.running && Math.floor(this.time / 800) % 2 === 0) this.text('z', pet.x + 9 * u, pet.y - 8 * u + bobY, '#b9c6ff', false);
       }

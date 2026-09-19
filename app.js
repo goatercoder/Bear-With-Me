@@ -1,16 +1,22 @@
-/* app.js — Focusling popup / arena UI.
+/* app.js — Focusling window / arena UI.
  * The background worker owns all state; this file only renders it, sends
- * commands and runs the arena animation while the page is open. */
+ * commands and runs the arena animation while the page is open.
+ * popup.html is opened as a small window in the top-right corner; the same
+ * file with a bigger canvas is arena.html (a normal tab). */
 (function () {
   'use strict';
   const api = globalThis.browser ?? globalThis.chrome;
   const KEY = 'focusling';
+  const MINI_WIDTH = 360;
   const $ = (id) => document.getElementById(id);
 
   let state = null;
   let game = null;
   let lastEventAt = 0;
   let lastLevel = null;
+  let lastStage = null;
+  let miniWindow = null;   // { id } when this page lives in its own popup window
+  let parked = false;      // window has been placed in the top-right corner
   const pendingKills = { kills: 0, xp: 0, bosses: 0, maxCombo: 0 };
 
   async function send(msg) {
@@ -24,9 +30,7 @@
     const m = Math.floor(ms / 60000), s = Math.floor((ms % 60000) / 1000);
     return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }
-  function timerRemaining(t, now) {
-    return t.phase === 'running' ? t.endsAt - now : t.remainingMs;
-  }
+  function timerRemaining(t, now) { return t.phase === 'running' ? t.endsAt - now : t.remainingMs; }
   function modeName(mode) { return mode === 'focus' ? 'Focus' : mode === 'short' ? 'Short break' : 'Long break'; }
 
   function toast(text) {
@@ -35,6 +39,43 @@
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 3000);
   }
+
+  // ---- window management ---------------------------------------------------
+  // Park the popup window in the top-right corner and size it to the content.
+  async function fitWindow() {
+    if (!miniWindow) return;
+    const frameW = Math.max(0, window.outerWidth - window.innerWidth);
+    const frameH = Math.max(0, window.outerHeight - window.innerHeight);
+    const width = MINI_WIDTH + frameW;
+    const height = Math.min($('app').scrollHeight + frameH, (screen.availHeight || 800) - 16);
+    const msg = { type: 'fitWindow', windowId: miniWindow.id, width, height };
+    if (!parked) {
+      msg.left = Math.max(0, (screen.availLeft || 0) + (screen.availWidth || 1200) - width - 8);
+      msg.top = (screen.availTop || 0) + 8;
+    }
+    try { const r = await send(msg); if (r && r.ok) parked = true; } catch (e) { /* not fatal */ }
+  }
+
+  async function detectWindow() {
+    if (!api.windows || document.body.classList.contains('arena-page')) return;
+    try {
+      const w = await api.windows.getCurrent();
+      if (w && w.type === 'popup') miniWindow = { id: w.id };
+    } catch (e) { /* not in an extension window */ }
+  }
+
+  // ---- drawer ----------------------------------------------------------------
+  function openDrawer(tab) {
+    const drawer = $('drawer');
+    drawer.hidden = false;
+    for (const b of drawer.querySelectorAll('.tabs button[data-tab]')) b.classList.toggle('active', b.dataset.tab === tab);
+    for (const p of drawer.querySelectorAll('.tab-panel')) p.hidden = p.dataset.panel !== tab;
+    if (tab === 'pets') renderPets();
+    if (tab === 'settings') fillSettings();
+    fitWindow();
+  }
+  function closeDrawer() { $('drawer').hidden = true; fitWindow(); }
+  function drawerTab() { const b = document.querySelector('.tabs button.active'); return b ? b.dataset.tab : 'stats'; }
 
   // ---- sound ---------------------------------------------------------------
   function beep(kind) {
@@ -55,11 +96,11 @@
   }
 
   // ---- render --------------------------------------------------------------
-  function drawMini(canvas, avatarId, scale) {
+  function drawMini(canvas, avatarId, level, scale) {
     const c = canvas.getContext('2d');
     c.imageSmoothingEnabled = false;
     c.clearRect(0, 0, canvas.width, canvas.height);
-    c.drawImage(Sprites.render(Sprites.PETS[avatarId] || Sprites.PETS.osci, scale), 0, 0);
+    c.drawImage(Sprites.render(Sprites.petSprite(avatarId, level), scale), 0, 0);
   }
 
   function render() {
@@ -68,22 +109,23 @@
     const pet = state.pet, t = state.timer, s = state.settings;
     const level = Core.levelForXp(pet.xp);
     const name = Core.petDisplayName(pet);
+    const stage = Sprites.stageFor(pet.avatar, level);
     document.title = `${name} · Focusling`;
 
     $('petName').textContent = name;
     $('levelBadge').textContent = `Lv ${level}`;
     const mood = Core.hpStatus(pet);
-    $('mood').textContent = `${mood.emoji} ${mood.label}`;
-    drawMini($('avatarMini'), pet.avatar, 2);
+    $('mood').textContent = `${mood.emoji} ${stage.stage ? stage.stage.name.replace(/^Osci\s|\sOsci$/, '') : mood.label}`;
+    $('mood').title = `${mood.label}${stage.stage ? ' · ' + stage.stage.name : ''}`;
+    drawMini($('avatarMini'), pet.avatar, level, 2);
 
-    // bars
+    // bars (strip under the arena + full bars in the drawer)
     const hpPct = Core.clamp(pet.hp, 0, 100);
-    $('hpFill').style.width = `${hpPct}%`;
-    $('hpFill').classList.toggle('low', hpPct < 35);
-    $('hpText').textContent = `${Math.ceil(hpPct)} / ${Core.MAX_HP}`;
     const lvlStart = Core.xpForLevel(level), lvlNext = Core.xpForLevel(level + 1);
-    const xpPct = ((pet.xp - lvlStart) / (lvlNext - lvlStart)) * 100;
-    $('xpFill').style.width = `${Core.clamp(xpPct, 0, 100)}%`;
+    const xpPct = Core.clamp(((pet.xp - lvlStart) / (lvlNext - lvlStart)) * 100, 0, 100);
+    for (const id of ['hpFill', 'hpFill2']) { $(id).style.width = `${hpPct}%`; $(id).classList.toggle('low', hpPct < 35); }
+    for (const id of ['xpFill', 'xpFill2']) $(id).style.width = `${xpPct}%`;
+    $('hpText').textContent = `${Math.ceil(hpPct)} / ${Core.MAX_HP}`;
     $('xpText').textContent = `${pet.xp - lvlStart} / ${lvlNext - lvlStart}`;
 
     const starve = $('starve');
@@ -99,7 +141,8 @@
 
     // timer
     const modeEl = $('modeLabel');
-    modeEl.textContent = t.phase === 'paused' ? `${modeName(t.mode)} · paused` : t.phase === 'ready' ? `${modeName(t.mode)} · ready` : modeName(t.mode);
+    modeEl.textContent = t.phase === 'paused' ? 'Paused' : t.phase === 'ready' ? (t.mode === 'focus' ? 'Ready' : 'Break ready') : (t.mode === 'focus' ? 'Focus' : 'Break');
+    modeEl.title = modeName(t.mode);
     modeEl.className = `mode ${t.mode === 'focus' ? 'focus' : 'break'}`;
     const every = Math.max(1, s.longEvery);
     const done = t.cycle % every;
@@ -110,23 +153,22 @@
 
     const btns = $('timerButtons');
     btns.innerHTML = '';
-    const mk = (label, cls, onClick, disabled) => {
+    const mk = (label, cls, title, onClick) => {
       const b = document.createElement('button');
-      b.className = `btn ${cls || ''}`; b.textContent = label; b.disabled = !!disabled;
+      b.className = `btn ${cls || ''}`; b.textContent = label; b.title = title || label;
       b.addEventListener('click', onClick); btns.appendChild(b); return b;
     };
     if (!pet.alive) {
-      mk('Revive your pet', 'primary', () => $('deathModal').hidden = false);
+      mk('Revive', 'primary', 'Revive your pet', () => $('deathModal').hidden = false);
     } else if (t.phase === 'ready') {
-      mk(t.mode === 'focus' ? `Start focus (${s.focusMin} min)` : `Start ${modeName(t.mode).toLowerCase()}`, 'primary', () => timer('start'));
-      if (t.mode !== 'focus') mk('Skip break', '', () => timer('skip'));
-      else if (t.cycle > 0) mk('Reset cycle', 'small', () => timer('reset-cycle'));
+      mk(t.mode === 'focus' ? '▶ Start' : '▶ Break', 'primary', t.mode === 'focus' ? `Start a ${s.focusMin} minute focus block` : `Start ${modeName(t.mode).toLowerCase()}`, () => timer('start'));
+      if (t.mode !== 'focus') mk('⏭', 'icon', 'Skip the break', () => timer('skip'));
     } else if (t.phase === 'running') {
-      mk('Pause', '', () => timer('pause'));
-      mk(t.mode === 'focus' ? 'Give up' : 'Skip', 'danger', () => timer(t.mode === 'focus' ? 'stop' : 'skip'));
+      mk('❚❚', 'icon', 'Pause', () => timer('pause'));
+      mk('✕', 'icon danger', t.mode === 'focus' ? 'Give up this block' : 'Skip the break', () => timer(t.mode === 'focus' ? 'stop' : 'skip'));
     } else {
-      mk('Resume', 'primary', () => timer('resume'));
-      mk(t.mode === 'focus' ? 'Give up' : 'Skip', 'danger', () => timer(t.mode === 'focus' ? 'stop' : 'skip'));
+      mk('▶', 'primary icon', 'Resume', () => timer('resume'));
+      mk('✕', 'icon danger', t.mode === 'focus' ? 'Give up this block' : 'Skip the break', () => timer(t.mode === 'focus' ? 'stop' : 'skip'));
     }
 
     // stats
@@ -150,9 +192,10 @@
     const week = $('week'); week.innerHTML = '';
     const today = Core.dayKey(now);
     const days = Array.from({ length: 7 }, (_, i) => Core.addDays(today, i - 6));
-    const max = Math.max(1, ...days.map(d => (state.history[d] || 0) + (d === today ? Math.floor(state.today.focusMs / 60000) - (state.history[d] || 0) : 0)));
+    const minsFor = (d) => d === today ? Math.floor(state.today.focusMs / 60000) : (state.history[d] || 0);
+    const max = Math.max(1, ...days.map(minsFor));
     for (const d of days) {
-      const min = d === today ? Math.floor(state.today.focusMs / 60000) : (state.history[d] || 0);
+      const min = minsFor(d);
       const el = document.createElement('div');
       el.className = `day${d === today ? ' today' : ''}`; el.title = `${d}: ${min} min`;
       el.innerHTML = `<i style="height:${Math.max(4, min / max * 40)}px"></i><span>${['S', 'M', 'T', 'W', 'T', 'F', 'S'][new Date(d + 'T12:00:00').getDay()]}</span>`;
@@ -166,14 +209,17 @@
     else if (t.phase === 'paused') { ov.hidden = false; ov.textContent = 'Paused. The monsters are waiting…'; }
     else if (t.mode !== 'focus' && t.phase === 'running') { ov.hidden = false; ov.textContent = `${name} is resting. Stretch, drink water, look away from the screen.`; }
     else if (t.mode !== 'focus') { ov.hidden = false; ov.textContent = `Break time is ready. ${name} deserves it.`; }
-    else { ov.hidden = false; ov.textContent = state.stats.sessions === 0 ? `Start a focus block and ${name} will fight for you.` : `Start a focus block to send ${name} into battle.`; }
+    else { ov.hidden = false; ov.textContent = state.stats.sessions === 0 ? `Press ▶ Start and ${name} will fight for you.` : `Press ▶ Start to send ${name} into battle.`; }
 
     // game context
-    if (game) {
-      game.setContext({ avatar: pet.avatar, level, hp: pet.hp, alive: pet.alive, mode: t.mode, running: t.phase === 'running' });
+    if (game) game.setContext({ avatar: pet.avatar, level, hp: pet.hp, alive: pet.alive, mode: t.mode, running: t.phase === 'running' });
+    if (lastLevel !== null && level > lastLevel && !document.hidden) {
+      if (lastStage !== null && stage.index > lastStage) toast(`✨ ${name} evolved into ${stage.stage.name}!`);
+      else toast(`Level up! ${name} is now level ${level}`);
     }
-    if (lastLevel !== null && level > lastLevel && !document.hidden) toast(`Level up! ${name} is now level ${level}`);
-    lastLevel = level;
+    lastLevel = level; lastStage = stage.index;
+
+    if (!$('drawer').hidden && drawerTab() === 'pets') renderPets();
 
     // modals driven by state
     if (state.report && $('deathModal').hidden) showReport(state.report);
@@ -204,7 +250,11 @@
     lines.push(`<div class="line"><span>${name} fought off ${r.kills} monster${r.kills === 1 ? '' : 's'}</span><b>+${r.xpKills} XP</b></div>`);
     if (r.xpQuests) lines.push(`<div class="line"><span>Daily quest complete</span><b>+${r.xpQuests} XP</b></div>`);
     if (r.hpGain) lines.push(`<div class="line"><span>${name} ate well</span><b>+${r.hpGain} HP</b></div>`);
-    if (r.levelTo > r.levelFrom) lines.push(`<div class="line"><span>Level up!</span><b>Lv ${r.levelFrom} → ${r.levelTo}</b></div>`);
+    if (r.levelTo > r.levelFrom) {
+      lines.push(`<div class="line"><span>Level up!</span><b>Lv ${r.levelFrom} → ${r.levelTo}</b></div>`);
+      const a = Sprites.stageFor(pet.avatar, r.levelFrom), b = Sprites.stageFor(pet.avatar, r.levelTo);
+      if (b.index > a.index) lines.push(`<div class="line"><span>✨ Evolved!</span><b>${b.stage.name}</b></div>`);
+    }
     for (const id of r.unlocked || []) lines.push(`<div class="line"><span>New pet unlocked</span><b>${Core.avatarById(id).name}</b></div>`);
     if (r.shieldEarned) lines.push(`<div class="line"><span>${r.streak}-day streak!</span><b>+1 shield 🛡</b></div>`);
     else if (r.streak) lines.push(`<div class="line"><span>Streak</span><b>${r.streak} day${r.streak === 1 ? '' : 's'} 🔥</b></div>`);
@@ -226,19 +276,44 @@
     $('deathModal').hidden = false;
   }
 
-  function renderAvatars() {
-    const grid = $('avatarGrid'); grid.innerHTML = '';
+  function renderPets() {
     const level = Core.levelForXp(state.pet.xp);
+    const pet = state.pet;
+
+    // evolution card for the current pet
+    const ev = $('evolution'); ev.innerHTML = '';
+    const st = Sprites.stageFor(pet.avatar, level);
+    if (st.stage) {
+      const cv = document.createElement('canvas'); cv.width = 48; cv.height = 48; drawMini(cv, pet.avatar, level, 3);
+      ev.appendChild(cv);
+      const info = document.createElement('div'); info.style.flex = '1';
+      const stages = Sprites.PETS[pet.avatar].stages;
+      let sub, bar = '';
+      if (st.next) {
+        const from = Core.xpForLevel(st.stage.level), to = Core.xpForLevel(st.next.level);
+        const pct = Core.clamp((pet.xp - from) / (to - from) * 100, 0, 100);
+        const hoursLeft = Math.ceil((to - pet.xp) / Core.XP_PER_MIN / 60);
+        sub = `Evolves into <b>${st.next.name}</b> at level ${st.next.level} — roughly ${hoursLeft}h of study to go.`;
+        bar = `<div class="ev-bar"><i style="width:${pct}%"></i></div>`;
+      } else sub = 'Final form reached. Legendary.';
+      info.innerHTML = `<div class="ev-title">${st.stage.name} <span class="badge">stage ${st.index + 1}/${st.total}</span></div><div class="ev-sub">${st.stage.blurb}</div><div class="ev-sub">${sub}</div>${bar}<div class="ev-stages">${stages.map((s, i) => `<span class="${i <= st.index ? 'done' : ''}" title="${s.name}">Lv ${s.level}</span>`).join('')}</div>`;
+      ev.appendChild(info);
+    } else {
+      ev.innerHTML = `<div class="ev-sub">${Core.avatarById(pet.avatar).blurb}</div>`;
+    }
+
+    const grid = $('avatarGrid'); grid.innerHTML = '';
     for (const a of Core.AVATARS) {
       const unlocked = state.unlocked.includes(a.id);
       const card = document.createElement('div');
-      card.className = `avatar-card${unlocked ? '' : ' locked'}${state.pet.avatar === a.id ? ' selected' : ''}`;
+      card.className = `avatar-card${unlocked ? '' : ' locked'}${pet.avatar === a.id ? ' selected' : ''}`;
       card.title = a.blurb + (unlocked ? '' : ` — unlocks at level ${a.unlockLevel} (you are ${level})`);
       const cv = document.createElement('canvas'); cv.width = 48; cv.height = 48;
-      drawMini(cv, a.id, 3);
+      drawMini(cv, a.id, level, 3);
       card.appendChild(cv);
-      card.insertAdjacentHTML('beforeend', `<div class="a-name">${a.name}</div><div class="a-sub">${unlocked ? (state.pet.avatar === a.id ? 'current' : 'tap to pick') : `🔒 Lv ${a.unlockLevel}`}</div>`);
-      if (unlocked) card.addEventListener('click', async () => { state = await send({ type: 'setAvatar', id: a.id }); render(); renderAvatars(); });
+      const stages = Sprites.PETS[a.id] && Sprites.PETS[a.id].stages;
+      card.insertAdjacentHTML('beforeend', `<div class="a-name">${a.name}</div><div class="a-sub">${unlocked ? (pet.avatar === a.id ? 'current' : stages ? 'evolves' : 'tap to pick') : `🔒 Lv ${a.unlockLevel}`}</div>`);
+      if (unlocked) card.addEventListener('click', async () => { state = await send({ type: 'setAvatar', id: a.id }); render(); renderPets(); });
       grid.appendChild(card);
     }
   }
@@ -275,7 +350,9 @@
     state = await send({ type: 'get' });
     lastEventAt = state.lastEvent ? state.lastEvent.at : 0;
     lastLevel = Core.levelForXp(state.pet.xp);
+    lastStage = Sprites.stageFor(state.pet.avatar, lastLevel).index;
     $('app').hidden = false;
+    await detectWindow();
 
     game = new Game($('arena'));
     game.onKill = (k) => {
@@ -284,6 +361,7 @@
     };
     game.start();
     render();
+    fitWindow();
 
     setInterval(renderClock, 250);
     setInterval(flushKills, 2000);
@@ -297,15 +375,15 @@
     document.addEventListener('visibilitychange', () => { if (document.hidden) flushKills(); else game.start(); });
     window.addEventListener('pagehide', flushKills);
 
-    // header
+    // header & drawer
     $('petName').addEventListener('click', async () => {
       const name = prompt('Name your pet', state.pet.name);
       if (name && name.trim()) { state = await send({ type: 'rename', name }); render(); }
     });
-    $('avatarBtn').addEventListener('click', () => { renderAvatars(); $('avatarModal').hidden = false; });
-    $('avatarClose').addEventListener('click', () => $('avatarModal').hidden = true);
-    $('settingsBtn').addEventListener('click', () => { fillSettings(); $('settingsModal').hidden = false; });
-    $('settingsClose').addEventListener('click', () => $('settingsModal').hidden = true);
+    $('avatarBtn').addEventListener('click', () => openDrawer('pets'));
+    $('settingsBtn').addEventListener('click', () => { if ($('drawer').hidden) openDrawer(drawerTab()); else closeDrawer(); });
+    $('drawerClose').addEventListener('click', closeDrawer);
+    for (const b of document.querySelectorAll('.tabs button[data-tab]')) b.addEventListener('click', () => openDrawer(b.dataset.tab));
     $('settingsForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const f = e.target, patch = {};
@@ -316,11 +394,11 @@
         else patch[el.name] = Number(el.value);
       }
       state = await send({ type: 'settings', patch });
-      $('settingsModal').hidden = true; render(); toast('Settings saved');
+      render(); toast('Settings saved');
     });
     $('resetBtn').addEventListener('click', async () => {
       if (!confirm('Reset Focusling completely? Your pet, XP, stats and settings will be erased.')) return;
-      state = await send({ type: 'reset' }); $('settingsModal').hidden = true; render();
+      state = await send({ type: 'reset' }); closeDrawer(); render();
     });
     $('reportOk').addEventListener('click', async () => { $('reportModal').hidden = true; state = await send({ type: 'ackReport' }); render(); });
     $('reviveBtn').addEventListener('click', async () => { $('deathModal').hidden = true; state = await send({ type: 'revive' }); render(); toast(`Welcome back, ${Core.petDisplayName(state.pet)}!`); });
@@ -332,7 +410,7 @@
     document.addEventListener('keydown', (e) => {
       if (e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return;
       if (e.key === ' ') { e.preventDefault(); const p = state.timer.phase; timer(p === 'running' ? 'pause' : p === 'paused' ? 'resume' : 'start'); }
-      if (e.key === 'Escape') for (const m of document.querySelectorAll('.modal')) if (m.id !== 'deathModal') m.hidden = true;
+      if (e.key === 'Escape') { for (const m of document.querySelectorAll('.modal')) if (m.id !== 'deathModal') m.hidden = true; if (!$('drawer').hidden) closeDrawer(); }
     });
   }
 

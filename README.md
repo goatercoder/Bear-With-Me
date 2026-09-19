@@ -28,7 +28,9 @@ unlock as you level up.
    (Temporary add-ons are removed when Firefox restarts; for a permanent install run `npm run package` and
    sign the zip through [addons.mozilla.org](https://addons.mozilla.org/developers/).)
 
-Click the toolbar icon, hit **Start focus (25 min)** and get to work.
+Click the toolbar icon. A small window with Osci and the arena pops up in the **top-right corner** of your
+screen. Press **▶ Start** and get to work. Everything else (stats, quests, pets, settings) lives behind the
+**⚙** button in that window.
 
 ## How it works
 
@@ -39,6 +41,7 @@ Click the toolbar icon, hit **Start focus (25 min)** and get to work.
 | Level | `level = 1 + √(XP / 40)` — level 2 after your first block, level 5 around 5 hours, level 15 around 65 hours of study. |
 | Power | Damage, fire rate and number of bullets all come from the level. Monsters scale too, so the arena stays fun. |
 | HP | Finishing a block feeds your pet (up to +30 HP). If you don't study for **8 hours** the pet starts losing HP and starves **48 hours** later (both adjustable, or turn decay off). |
+| Evolution | Osci **very slowly evolves**: Cub (Lv 1) → Bear (Lv 5, ~6 h of study) → Scholar (Lv 10, ~27 h) → Knight (Lv 18, ~96 h) → Cosmic (Lv 28, ~243 h). The Pets tab shows the progress to the next form. |
 | Death | A starved pet goes to the memorial 🪦. Revive it as *Osci Bear II* at level 1. Unlocked pets and lifetime stats are kept. |
 | Shields | Every 7-day streak earns a 🛡 shield that saves your pet once. |
 | Streak | Consecutive days with at least one minute of focus. |
@@ -49,7 +52,7 @@ Click the toolbar icon, hit **Start focus (25 min)** and get to work.
 
 | Pet | Unlocks at |
 |---|---|
-| Osci Bear (default) | level 1 |
+| Osci (default, evolves through 5 forms) | level 1 |
 | Nyan Cat | level 1 |
 | Gloop the slime | level 3 |
 | Quackers the duck | level 5 |
@@ -58,11 +61,14 @@ Click the toolbar icon, hit **Start focus (25 min)** and get to work.
 | Bolt the robot | level 12 |
 | Ember the dragon | level 15 |
 
-Click the pet's name to rename it. Click the avatar to switch pets.
+Click the pet's name to rename it. Click the avatar (or ⚙ → Pets) to switch pets and see evolution progress.
 
 ### Other features
 
-- **Arena tab** (⤢ button) — a big version of the arena you can keep open on a second monitor.
+- **Mini window** — the toolbar icon opens one small window (arena + timer + Start) parked in the top-right
+  corner; clicking the icon again just focuses it. Opening ⚙ grows the window to show the drawer, closing it
+  shrinks it back.
+- **Big arena tab** (⚙ → Settings → *Open big arena*) — a large version you can keep on a second monitor.
 - **Click the arena** during focus for a charged **POW** shot (1.5 s cooldown). Kills build a combo; let a monster
   slip past and the combo resets.
 - **Distraction shield** — optional. During a focus block, listed sites (YouTube, Reddit, TikTok, …) redirect to
@@ -83,13 +89,14 @@ background.js   timer, HP decay, notifications, badge, distraction shield
 sprites.js      pixel art (pets, monsters) as character grids
 game.js         the canvas arena
 app.js          popup / arena UI
-popup.html      toolbar popup      arena.html   full-tab arena     blocked.html  distraction page
+popup.html      the mini window    arena.html   full-tab arena     blocked.html  distraction page
 style.css
 test/           node --test
 scripts/        make-icons.py (renders Osci Bear to PNG), package.sh (zip for store upload)
 ```
 
-Add a pet by drawing a 16×16 grid in `sprites.js` and adding one line to `Core.AVATARS`.
+Add a pet by drawing a 16×16 grid in `sprites.js` and adding one line to `Core.AVATARS`. Give it a `stages`
+array (like Osci) and it evolves by level.
 
 ## Development
 

@@ -5,76 +5,104 @@
   <title>Focusling</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="popup">
+<body class="mini">
   <main id="app" class="app" hidden>
-    <header class="top">
-      <div class="who">
-        <button id="avatarBtn" class="avatar-btn" title="Change avatar"><canvas id="avatarMini" width="32" height="32"></canvas></button>
-        <div>
-          <div class="name-row">
-            <span id="petName" class="pet-name" title="Click to rename">Osci Bear</span>
-            <span id="levelBadge" class="badge">Lv 1</span>
-          </div>
-          <div id="mood" class="mood">😄 Thriving</div>
-        </div>
-      </div>
-      <div class="top-actions">
-        <a id="arenaLink" class="icon-btn" title="Open big arena in a tab" href="arena.html" target="_blank">⤢</a>
-        <button id="settingsBtn" class="icon-btn" title="Settings">⚙</button>
-      </div>
-    </header>
-
     <div class="arena-wrap">
       <canvas id="arena" width="360" height="180"></canvas>
       <div id="arenaOverlay" class="arena-overlay" hidden></div>
+      <div class="strip" title="HP (green) · XP to next level (gold)">
+        <div class="strip-track"><div id="hpFill" class="fill hp"></div></div>
+        <div class="strip-track"><div id="xpFill" class="fill xp"></div></div>
+      </div>
     </div>
 
-    <section class="bars">
-      <div class="bar-row">
-        <span class="bar-label">HP</span>
-        <div class="bar"><div id="hpFill" class="fill hp"></div></div>
-        <span id="hpText" class="bar-value">100</span>
+    <div class="bar">
+      <button id="avatarBtn" class="avatar-btn" title="Pets & evolution"><canvas id="avatarMini" width="32" height="32"></canvas></button>
+      <div class="bar-info">
+        <div class="name-row"><span id="petName" class="pet-name" title="Click to rename">Osci Bear</span></div>
+        <div class="mood-row"><span id="levelBadge" class="badge">Lv 1</span><span id="mood" class="mood">😄 Thriving</span></div>
       </div>
-      <div class="bar-row">
-        <span class="bar-label">XP</span>
-        <div class="bar"><div id="xpFill" class="fill xp"></div></div>
-        <span id="xpText" class="bar-value">0 / 40</span>
+      <div class="bar-timer">
+        <div id="clock" class="clock">25:00</div>
+        <div class="mode-row"><span id="modeLabel" class="mode">Focus</span><span id="cycleDots" class="dots" title="Focus blocks until the long break"></span></div>
       </div>
-      <div id="starve" class="hint"></div>
-    </section>
-
-    <section class="timer">
-      <div class="timer-head">
-        <span id="modeLabel" class="mode">Focus</span>
-        <span id="cycleDots" class="dots" title="Focus blocks until the long break"></span>
-      </div>
-      <div id="clock" class="clock">25:00</div>
-      <input id="task" class="task" type="text" maxlength="120" placeholder="What are you working on?">
       <div id="timerButtons" class="buttons"></div>
-    </section>
+      <button id="settingsBtn" class="icon-btn" title="Stats, quests, pets & settings">⚙</button>
+    </div>
 
-    <section class="stats">
-      <div class="stat"><b id="sToday">0m</b><span>today</span></div>
-      <div class="stat"><b id="sStreak">0</b><span>day streak</span></div>
-      <div class="stat"><b id="sSessions">0</b><span>sessions</span></div>
-      <div class="stat"><b id="sKills">0</b><span>monsters</span></div>
-      <div class="stat"><b id="sTotal">0m</b><span>all time</span></div>
-      <div class="stat"><b id="sShields">0</b><span>shields</span></div>
-    </section>
+    <section id="drawer" class="drawer" hidden>
+      <nav class="tabs">
+        <button data-tab="stats" class="active">Stats</button>
+        <button data-tab="quests">Quests</button>
+        <button data-tab="pets">Pets</button>
+        <button data-tab="settings">Settings</button>
+        <button id="drawerClose" class="tab-close" title="Close">✕</button>
+      </nav>
 
-    <section class="quests">
-      <h3>Daily quests</h3>
-      <ul id="questList"></ul>
-    </section>
+      <div class="tab-panel" data-panel="stats">
+        <input id="task" class="task" type="text" maxlength="120" placeholder="What are you working on? (Enter starts focus)">
+        <div class="bar-row"><span class="bar-label">HP</span><div class="bar-track"><div id="hpFill2" class="fill hp"></div></div><span id="hpText" class="bar-value">100</span></div>
+        <div class="bar-row"><span class="bar-label">XP</span><div class="bar-track"><div id="xpFill2" class="fill xp"></div></div><span id="xpText" class="bar-value">0 / 40</span></div>
+        <div id="starve" class="hint"></div>
+        <div class="stats">
+          <div class="stat"><b id="sToday">0m</b><span>today</span></div>
+          <div class="stat"><b id="sStreak">0</b><span>day streak</span></div>
+          <div class="stat"><b id="sSessions">0</b><span>sessions</span></div>
+          <div class="stat"><b id="sKills">0</b><span>monsters</span></div>
+          <div class="stat"><b id="sTotal">0m</b><span>all time</span></div>
+          <div class="stat"><b id="sShields">0</b><span>shields</span></div>
+        </div>
+        <h3>Last 7 days</h3>
+        <div id="week" class="week-bars"></div>
+      </div>
 
-    <section class="week">
-      <h3>Last 7 days</h3>
-      <div id="week" class="week-bars"></div>
-    </section>
+      <div class="tab-panel" data-panel="quests" hidden>
+        <h3>Daily quests</h3>
+        <ul id="questList"></ul>
+      </div>
 
-    <footer class="foot">
-      <span id="footNote">Focusling · your pet gets stronger every minute you study.</span>
-    </footer>
+      <div class="tab-panel" data-panel="pets" hidden>
+        <div id="evolution" class="evolution"></div>
+        <h3>Choose your pet</h3>
+        <div id="avatarGrid" class="avatar-grid"></div>
+      </div>
+
+      <div class="tab-panel" data-panel="settings" hidden>
+        <form id="settingsForm" class="settings">
+          <fieldset>
+            <legend>Pomodoro</legend>
+            <label>Focus <input name="focusMin" type="number" min="1" max="180"> min</label>
+            <label>Short break <input name="shortMin" type="number" min="1" max="60"> min</label>
+            <label>Long break <input name="longMin" type="number" min="1" max="120"> min</label>
+            <label>Long break every <input name="longEvery" type="number" min="1" max="12"> focus blocks</label>
+            <label class="check"><input name="autoStartBreaks" type="checkbox"> Auto-start breaks</label>
+            <label class="check"><input name="autoStartFocus" type="checkbox"> Auto-start next focus block</label>
+          </fieldset>
+          <fieldset>
+            <legend>Pet</legend>
+            <label class="check"><input name="decayEnabled" type="checkbox"> Pet loses HP when I don't study</label>
+            <label>Grace period <input name="graceHours" type="number" min="0" max="168"> hours</label>
+            <label>Starves after another <input name="hoursToDie" type="number" min="1" max="720"> hours</label>
+            <p class="hint">Finishing a focus block restores up to 30 HP. Every 7-day streak earns a shield that saves your pet once.</p>
+          </fieldset>
+          <fieldset>
+            <legend>Distraction shield</legend>
+            <label class="check"><input name="shieldEnabled" type="checkbox"> Block these sites during focus</label>
+            <textarea name="shieldDomains" rows="3" placeholder="one domain per line"></textarea>
+          </fieldset>
+          <fieldset>
+            <legend>Alerts</legend>
+            <label class="check"><input name="notifications" type="checkbox"> Desktop notifications</label>
+            <label class="check"><input name="sound" type="checkbox"> Sound when a block ends</label>
+          </fieldset>
+          <div class="row">
+            <button type="submit" class="btn primary">Save</button>
+            <a id="arenaLink" class="btn" href="arena.html" target="_blank">Open big arena ⤢</a>
+            <button type="button" id="resetBtn" class="btn danger">Reset everything</button>
+          </div>
+        </form>
+      </div>
+    </section>
   </main>
 
   <!-- Battle report -->
@@ -83,55 +111,6 @@
       <h2 id="reportTitle">Focus complete!</h2>
       <div id="reportBody" class="report"></div>
       <button id="reportOk" class="btn primary">Nice</button>
-    </div>
-  </div>
-
-  <!-- Avatar picker -->
-  <div id="avatarModal" class="modal" hidden>
-    <div class="card wide">
-      <h2>Choose your pet</h2>
-      <div id="avatarGrid" class="avatar-grid"></div>
-      <button id="avatarClose" class="btn">Close</button>
-    </div>
-  </div>
-
-  <!-- Settings -->
-  <div id="settingsModal" class="modal" hidden>
-    <div class="card wide">
-      <h2>Settings</h2>
-      <form id="settingsForm" class="settings">
-        <fieldset>
-          <legend>Pomodoro</legend>
-          <label>Focus <input name="focusMin" type="number" min="1" max="180"> min</label>
-          <label>Short break <input name="shortMin" type="number" min="1" max="60"> min</label>
-          <label>Long break <input name="longMin" type="number" min="1" max="120"> min</label>
-          <label>Long break every <input name="longEvery" type="number" min="1" max="12"> focus blocks</label>
-          <label class="check"><input name="autoStartBreaks" type="checkbox"> Auto-start breaks</label>
-          <label class="check"><input name="autoStartFocus" type="checkbox"> Auto-start next focus block</label>
-        </fieldset>
-        <fieldset>
-          <legend>Pet</legend>
-          <label class="check"><input name="decayEnabled" type="checkbox"> Pet loses HP when I don't study</label>
-          <label>Grace period <input name="graceHours" type="number" min="0" max="168"> hours</label>
-          <label>Starves after another <input name="hoursToDie" type="number" min="1" max="720"> hours</label>
-          <p class="hint">Finishing a focus block restores up to 30 HP. Every 7-day streak earns a shield that saves your pet once.</p>
-        </fieldset>
-        <fieldset>
-          <legend>Distraction shield</legend>
-          <label class="check"><input name="shieldEnabled" type="checkbox"> Block these sites during focus</label>
-          <textarea name="shieldDomains" rows="3" placeholder="one domain per line"></textarea>
-        </fieldset>
-        <fieldset>
-          <legend>Alerts</legend>
-          <label class="check"><input name="notifications" type="checkbox"> Desktop notifications</label>
-          <label class="check"><input name="sound" type="checkbox"> Sound when a block ends</label>
-        </fieldset>
-        <div class="row">
-          <button type="submit" class="btn primary">Save</button>
-          <button type="button" id="settingsClose" class="btn">Cancel</button>
-          <button type="button" id="resetBtn" class="btn danger">Reset everything</button>
-        </div>
-      </form>
     </div>
   </div>
 
@@ -148,10 +127,10 @@
   <!-- First run -->
   <div id="welcomeModal" class="modal" hidden>
     <div class="card">
-      <h2>Meet Osci Bear 🐻</h2>
+      <h2>Meet Osci 🐻</h2>
       <p class="report">
-        Osci is your study pet. Start a <b>25-minute focus block</b> and Osci fights aliens while you work.
-        Every minute you study earns XP, levels Osci up and unlocks new pets like Nyan Cat.
+        Osci is your study pet. Press <b>▶ Start</b> and Osci fights aliens while you work for 25 minutes.
+        Every minute you study earns XP. Osci levels up, slowly evolves, and unlocks new pets like Nyan Cat.
         <br><br>
         Stop studying for too long and Osci starves. Keep the streak alive!
       </p>

@@ -7,26 +7,119 @@
 
   const PETS = {
     osci: {
-      // Osci Bear — a round brown bear with a cyan sine wave on the belly.
+      // Osci Bear — evolves as it levels up. Base palette; stages may add colours.
       palette: { b: '#5a3a1e', B: '#a86b32', L: '#f2d3a5', k: '#1c1410', c: '#39d4ff', p: '#e88a8a' },
       shot: '#39d4ff',
-      rows: [
-        '...bb......bb...',
-        '..bBBb....bBBb..',
-        '..bBBbbbbbbBBb..',
-        '..bBBBBBBBBBBb..',
-        '.bBBBBBBBBBBBBb.',
-        '.bBBkBBBBBBkBBb.',
-        '.bBBBBBLLLBBBBb.',
-        '.bBpBBLLLLLBBpb.',
-        '.bBBBBLLkLLBBBb.',
-        '..bBBBBLLLBBBb..',
-        '..bbBBBBBBBBbb..',
-        '.bBBBLcLLLcLLBb.',
-        '.bBBBLLcLcLcLBb.',
-        '.bBBBBLLLLLBBBb.',
-        '..bBBb....bBBb..',
-        '..bbbb....bbbb..',
+      stages: [
+        {
+          level: 1, name: 'Osci Cub', blurb: 'A tiny cub with a big appetite for knowledge.',
+          rows: [
+            '................',
+            '................',
+            '....bb....bb....',
+            '...bBBb..bBBb...',
+            '...bBBbbbbBBb...',
+            '..bBBBBBBBBBBb..',
+            '..bBBkBBBBkBBb..',
+            '..bBpBBLLBBpBb..',
+            '..bBBBLLkLLBBb..',
+            '...bBBBLLLBBb...',
+            '...bBBBBBBBBb...',
+            '..bBBBLcLcLBBb..',
+            '..bBBBBLLLBBBb..',
+            '...bBBb..bBBb...',
+            '...bbbb..bbbb...',
+            '................',
+          ],
+        },
+        {
+          level: 5, name: 'Osci Bear', blurb: 'All grown up. Runs on honey and clean sine waves.',
+          rows: [
+            '...bb......bb...',
+            '..bBBb....bBBb..',
+            '..bBBbbbbbbBBb..',
+            '..bBBBBBBBBBBb..',
+            '.bBBBBBBBBBBBBb.',
+            '.bBBkBBBBBBkBBb.',
+            '.bBBBBBLLLBBBBb.',
+            '.bBpBBLLLLLBBpb.',
+            '.bBBBBLLkLLBBBb.',
+            '..bBBBBLLLBBBb..',
+            '..bbBBBBBBBBbb..',
+            '.bBBBLcLLLcLLBb.',
+            '.bBBBLLcLcLcLBb.',
+            '.bBBBBLLLLLBBBb.',
+            '..bBBb....bBBb..',
+            '..bbbb....bbbb..',
+          ],
+        },
+        {
+          level: 10, name: 'Scholar Osci', blurb: 'Glasses, scarf, and a reading list longer than yours.',
+          palette: { f: '#2b2b2b', s: '#3b82f6' },
+          rows: [
+            '...bb......bb...',
+            '..bBBb....bBBb..',
+            '..bBBbbbbbbBBb..',
+            '..bBBBBBBBBBBb..',
+            '.bBfffBBBBfffBb.',
+            '.bBfkfBffBfkfBb.',
+            '.bBBfffLLLfffBb.',
+            '.bBpBBLLLLLBBpb.',
+            '.bBBBBLLkLLBBBb.',
+            '..bBBBBLLLBBBb..',
+            '..bbssssssssbb..',
+            '.bBBBLcLLLcLLBb.',
+            '.bBBBLLcLcLcLBb.',
+            '.bBBBBLLLLLBBBb.',
+            '..bBBb....bBBb..',
+            '..bbbb....bbbb..',
+          ],
+        },
+        {
+          level: 18, name: 'Knight Osci', blurb: 'Armoured against distraction. The aliens fear the helmet.',
+          palette: { m: '#b4bcc9', d: '#5c6370', r: '#ff4d6d' },
+          rows: [
+            '...dd..rr..dd...',
+            '..dmmd.rr.dmmd..',
+            '..dmmddddddmmd..',
+            '..dmmmmmmmmmmd..',
+            '.dmmmmmmmmmmmmd.',
+            '.bBBkBBBBBBkBBb.',
+            '.bBBBBBLLLBBBBb.',
+            '.bBpBBLLLLLBBpb.',
+            '.bBBBBLLkLLBBBb.',
+            '..bBBBBLLLBBBb..',
+            '..ddmmmmmmmmdd..',
+            '.dmmmmcmmmcmmmd.',
+            '.dmmmmmcmcmcmmd.',
+            '.dmmmmmmmmmmmmd.',
+            '..bBBb....bBBb..',
+            '..bbbb....bbbb..',
+          ],
+        },
+        {
+          level: 28, name: 'Cosmic Osci', blurb: 'Made of starlight and focus. The final form.',
+          palette: { b: '#8a5a00', B: '#f5b301', L: '#fff1c2', w: '#ffffff', c: '#39d4ff' },
+          glow: '#ffd166',
+          rows: [
+            '...bb......bb...',
+            '..bBBb....bBBb..',
+            '..bBBbbbbbbBBb..',
+            '..bBBwBBBBBBBb..',
+            '.bBBBBBBBBBwBBb.',
+            '.bBBkBBBBBBkBBb.',
+            '.bBBBBBLLLBBBBb.',
+            '.bBpBBLLLLLBBpb.',
+            '.bBBBBLLkLLBBBb.',
+            '..bBBBBLLLBBBb..',
+            '..bbBBBBBBBBbb..',
+            '.bBwBLcLLLcLLBb.',
+            '.bBBBLLcLcLcLBb.',
+            '.bBBBBLLLLLBwBb.',
+            '..bBBb....bBBb..',
+            '..bbbb....bbbb..',
+          ],
+        },
       ],
     },
     nyan: {
@@ -333,5 +426,22 @@
 
   const RAINBOW = ['#ff3b30', '#ff9500', '#ffcc00', '#34c759', '#3b82f6', '#8b5cf6'];
 
-  root.Sprites = { PETS, MONSTERS, MISC, RAINBOW, render };
+  /** Evolution stage of an avatar at a level: { index, stage, next } (next = the stage after, or null). */
+  function stageFor(id, level) {
+    const pet = PETS[id] || PETS.osci;
+    if (!pet.stages) return { index: 0, stage: null, next: null, total: 1 };
+    let index = 0;
+    for (let i = 0; i < pet.stages.length; i++) if (level >= pet.stages[i].level) index = i;
+    return { index, stage: pet.stages[index], next: pet.stages[index + 1] || null, total: pet.stages.length };
+  }
+
+  /** The drawable sprite for an avatar at a level (stage palette merged over the base palette). */
+  function petSprite(id, level) {
+    const pet = PETS[id] || PETS.osci;
+    if (!pet.stages) return pet;
+    const { stage } = stageFor(id, level == null ? 999 : level);
+    return { palette: Object.assign({}, pet.palette, stage.palette || {}), rows: stage.rows, shot: pet.shot, trail: pet.trail, glow: stage.glow, name: stage.name };
+  }
+
+  root.Sprites = { PETS, MONSTERS, MISC, RAINBOW, render, stageFor, petSprite };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
