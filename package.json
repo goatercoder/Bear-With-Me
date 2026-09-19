@@ -1,0 +1,11 @@
+{
+  "name": "focusling",
+  "version": "1.0.0",
+  "description": "A pixel study pet that fights aliens while you study. Pomodoro browser extension.",
+  "private": true,
+  "scripts": {
+    "test": "node --test test/core.test.js",
+    "icons": "python3 scripts/make-icons.py",
+    "package": "sh scripts/package.sh"
+  }
+}
