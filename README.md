@@ -1,16 +1,20 @@
-# Focusling 🐻 — a study pet that fights aliens while you study
+# Oski — don't let him die 🐻🩸
 
-Focusling is a tiny browser extension (Chrome, Edge, Brave, Firefox) that puts a pixel-art pet in your
-toolbar. Start a **Pomodoro focus block** and your pet flies into the arena, blasting aliens, bats, UFOs and
-the occasional mothership. Every minute you study earns XP, and XP makes your pet **stronger**: more damage,
-faster shots, more bullets, new avatars.
+A tiny 8-bit **Oski** (the Cal bear) lives in the **top-right corner** of your browser. That's it. That's the
+extension.
 
-Stop studying for too long and your pet **starves**. Keep the streak alive.
+- **Work** in the browser and Oski is fine. If he was hurt, he slowly heals (about 90 minutes to full health).
+- **Doomscroll** on YouTube, Instagram, Reddit, Twitter/X or Clash Royale sites and he gets hurt. First a black
+  eye and a scratch, then bleeding, then bones showing, then he's barely twitching. **30 minutes** on those sites
+  kills a healthy Oski.
+- **Go idle** (no keyboard or mouse for a minute) and he fades too, more slowly: about 2 hours to die.
+- **Switch to another app** (browser not focused) and nothing happens either way.
+- When he dies he lies there grey with a fly on him. Click him (or the toolbar icon) to bring him back. He keeps
+  count of how many times you've killed him.
 
-The default pet is **Osci Bear**. **Nyan Cat** (with rainbow trail) is unlocked from the start; six more pets
-unlock as you level up.
+No timers, no stats, no XP. Just keep him alive.
 
-<p align="center"><img src="icons/icon128.png" width="96" alt="Osci Bear"></p>
+<p align="center"><img src="icons/icon128.png" width="96" alt="Oski"></p>
 
 ## Install (30 seconds, no build step)
 
@@ -19,101 +23,53 @@ unlock as you level up.
 1. Download this repo (green *Code* button → *Download ZIP*) and unzip it, or `git clone` it.
 2. Open `chrome://extensions`, switch on **Developer mode** (top right).
 3. Click **Load unpacked** and pick the folder that **directly contains `manifest.json`**.
-   ⚠ A GitHub ZIP unpacks into a folder *inside* a folder of the same name
-   (`Focusling-…/Focusling-…/manifest.json`). Pick the inner one, otherwise Chrome says
-   "Manifest file is missing or unreadable".
-4. Pin Focusling from the puzzle-piece menu so the pet is always one click away.
+   ⚠ A GitHub ZIP unpacks into a folder *inside* a folder of the same name. Pick the inner one, otherwise
+   Chrome says "Manifest file is missing or unreadable".
+4. Pin Oski from the puzzle-piece menu.
 
-**Firefox**
+**Firefox**: `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on…** → pick `manifest.json`.
 
-1. Open `about:debugging#/runtime/this-firefox`.
-2. Click **Load Temporary Add-on…** and pick `manifest.json` inside the folder.
-   (Temporary add-ons are removed when Firefox restarts; for a permanent install run `npm run package` and
-   sign the zip through [addons.mozilla.org](https://addons.mozilla.org/developers/).)
+Click the toolbar icon once. A little window with Oski appears in the top-right corner of your screen and he
+starts watching what you do. Oski also shows up in the top-right corner of every web page (so he bleeds right
+there on YouTube). Hover him to see his health and what's hurting him.
 
-Click the toolbar icon. A small window with Osci and the arena pops up in the **top-right corner** of your
-screen. Press **▶ Start** and get to work. Everything else (stats, quests, pets, settings) lives behind the
-**⚙** button in that window.
+## The gear
 
-## How it works
+Hover Oski in his window and a small ⚙ appears. Behind it:
 
-| Thing | Rule |
-|---|---|
-| Pomodoro | 25 min focus → 5 min break, long 15 min break after every 4 focus blocks. All adjustable. Breaks can auto-start. |
-| XP | **2 XP per minute** studied + **10 XP** for finishing a block + 1 XP per monster your pet defeats. |
-| Level | `level = 1 + √(XP / 40)` — level 2 after your first block, level 5 around 5 hours, level 15 around 65 hours of study. |
-| Power | Damage, fire rate and number of bullets all come from the level. Monsters scale too, so the arena stays fun. |
-| HP | Finishing a block feeds your pet (up to +30 HP). If you don't study for **8 hours** the pet starts losing HP and starves **48 hours** later (both adjustable, or turn decay off). |
-| Evolution | Osci **very slowly evolves**: Cub (Lv 1) → Bear (Lv 5, ~6 h of study) → Scholar (Lv 10, ~27 h) → Knight (Lv 18, ~96 h) → Cosmic (Lv 28, ~243 h). The Pets tab shows the progress to the next form. |
-| Death | A starved pet goes to the memorial 🪦. Revive it as *Osci Bear II* at level 1. Unlocked pets and lifetime stats are kept. |
-| Shields | Every 7-day streak earns a 🛡 shield that saves your pet once. |
-| Streak | Consecutive days with at least one minute of focus. |
-| Daily quests | Three quests a day (sessions, minutes, kills, combo, boss) for bonus XP. |
-| Battle report | When a block ends you get a report: minutes, XP, monsters fought, level-ups, unlocks. |
+- the list of sites that hurt him (one per line; defaults are YouTube, Instagram, Reddit, Twitter, X,
+  royaleapi.com, clashroyale.com, statsroyale.com, TikTok),
+- whether to show him on every web page as well as in his window,
+- desktop notifications at 50%, 20% and death,
+- turn him off / reset.
 
-### Pets
+The toolbar badge shows his health once he's hurt, `RIP` when he's dead, `off` when he's switched off.
 
-| Pet | Unlocks at |
-|---|---|
-| Osci (default, evolves through 5 forms) | level 1 |
-| Nyan Cat | level 1 |
-| Gloop the slime | level 3 |
-| Quackers the duck | level 5 |
-| Boo the ghost | level 7 |
-| Ribbit the frog | level 9 |
-| Bolt the robot | level 12 |
-| Ember the dragon | level 15 |
+## Notes
 
-Click the pet's name to rename it. Click the avatar (or ⚙ → Pets) to switch pets and see evolution progress.
-
-### Other features
-
-- **Mini window** — the toolbar icon opens one small window (arena + timer + Start) parked in the top-right
-  corner; clicking the icon again just focuses it. Opening ⚙ grows the window to show the drawer, closing it
-  shrinks it back.
-- **Big arena tab** (⚙ → Settings → *Open big arena*) — a large version you can keep on a second monitor.
-- **Click the arena** during focus for a charged **POW** shot (1.5 s cooldown). Kills build a combo; let a monster
-  slip past and the combo resets.
-- **Distraction shield** — optional. During a focus block, listed sites (YouTube, Reddit, TikTok, …) redirect to
-  a page where your pet tells you to get back to work. Edit the list in ⚙ Settings.
-- **Toolbar badge** shows minutes left (red = focus, green = break, amber = paused, `RIP` = uh oh).
-- **Desktop notifications** and a little chiptune when a block ends. Both can be turned off.
-- **Task line** — type what you're working on; press Enter to start.
-- **Keyboard**: `Space` starts / pauses / resumes, `Esc` closes dialogs.
-- **7-day chart** of focus minutes and lifetime stats.
-- All data stays in your browser (`chrome.storage.local`). No accounts, no servers, no tracking.
+- The corner window is a normal browser window, so it can end up behind other windows. The on-page overlay
+  is there so you still see him while browsing.
+- Tracking uses the browser's idle detector and the active tab of the focused browser window. Nothing leaves
+  your computer; state lives in `chrome.storage.local`.
+- All the injuries are pixel-art patches in `oski.js` (`STAGES`). Rates are in `rules.js` (`RATES`).
 
 ## Project layout
 
 ```
 manifest.json   MV3 manifest (Chrome service worker + Firefox event page)
-core.js         game rules — pure functions, unit-tested
-background.js   timer, HP decay, notifications, badge, distraction shield
-sprites.js      pixel art (pets, monsters) as character grids
-game.js         the canvas arena
-app.js          popup / arena UI
-popup.html      the mini window    arena.html   full-tab arena     blocked.html  distraction page
-style.css
-test/           node --test
-scripts/        make-icons.py (renders Osci Bear to PNG), package.sh (zip for store upload)
+rules.js        health rules — pure functions, unit-tested
+background.js   watches tabs / focus / idle, charges time, notifications, badge, opens the window
+oski.js         the sprite, the injury stages, and the animated renderer
+window.html/js  the tiny corner window
+overlay.js      content script: Oski in the corner of every page
+test/           npm test
+scripts/        make-icons.py (renders Oski to PNG), package.sh (zip for store upload)
 ```
-
-Add a pet by drawing a 16×16 grid in `sprites.js` and adding one line to `Core.AVATARS`. Give it a `stages`
-array (like Osci) and it evolves by level.
 
 ## Development
 
 ```
-npm test              # rules tests
-npm run icons         # regenerate icons from the Osci Bear sprite
+npm test              # rules + sprite tests
+npm run icons         # regenerate icons from the Oski sprite
 npm run package       # dist/focusling.zip
 ```
-
-## Ideas for later
-
-- Pet accessories bought with XP (hats, scarves, laser upgrades)
-- Boss rush mode on long breaks
-- Sync stats between devices with `chrome.storage.sync`
-- Study buddies: share a room code and see friends' pets in the arena
-- Weekly report card and calendar heat-map
-- Sounds/music per pet, more Nyan-style trails

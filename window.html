@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Oski</title>
+  <style>
+    html, body { margin: 0; background: #0b0d14; color: #e8ebf7; font: 12px system-ui, sans-serif; overflow: hidden; user-select: none; }
+    #stage { position: relative; width: 116px; height: 116px; display: grid; place-items: center; cursor: pointer; }
+    canvas { image-rendering: pixelated; display: block; }
+    #tip { position: absolute; left: 0; right: 0; bottom: 2px; text-align: center; font-size: 10px; color: #9aa3c7; opacity: 0; transition: opacity .2s; pointer-events: none; white-space: nowrap; }
+    #stage:hover #tip { opacity: 1; }
+    #gear { position: absolute; top: 2px; right: 2px; border: 0; background: transparent; color: #9aa3c7; font-size: 13px; cursor: pointer; opacity: 0; transition: opacity .2s; padding: 2px 4px; }
+    #stage:hover #gear { opacity: .9; }
+    #panel { padding: 8px; width: 240px; display: flex; flex-direction: column; gap: 6px; }
+    #panel h4 { margin: 0; font-size: 11px; color: #9aa3c7; text-transform: uppercase; letter-spacing: .06em; }
+    textarea { width: 100%; box-sizing: border-box; height: 110px; background: #171b31; color: inherit; border: 1px solid #2b3157; border-radius: 6px; font: 11px ui-monospace, monospace; padding: 5px; resize: none; }
+    label { display: flex; gap: 6px; align-items: center; font-size: 11px; }
+    .row { display: flex; gap: 6px; }
+    button.b { flex: 1; padding: 6px 8px; border-radius: 6px; border: 1px solid #2b3157; background: #1f2440; color: inherit; cursor: pointer; font-size: 11px; }
+    button.b.primary { background: #fdb515; border-color: #fdb515; color: #1c1410; font-weight: 700; }
+    button.b.danger { border-color: #b3111b; color: #ff8a8a; background: transparent; }
+    .hint { font-size: 10px; color: #6b7280; margin: 0; }
+  </style>
+</head>
+<body>
+  <div id="stage">
+    <canvas id="oski" width="104" height="104"></canvas>
+    <div id="tip"></div>
+    <button id="gear" title="Sites & options">⚙</button>
+  </div>
+  <div id="panel" hidden>
+    <h4>Sites that hurt Oski</h4>
+    <textarea id="sites" spellcheck="false"></textarea>
+    <label><input id="overlay" type="checkbox"> Also show Oski on every web page</label>
+    <label><input id="notif" type="checkbox"> Notify me when he's dying</label>
+    <p class="hint">30 min on these sites kills him. 2 h idle kills him. Working heals him (90 min to full).</p>
+    <div class="row"><button id="save" class="b primary">Save</button><button id="back" class="b">Back</button></div>
+    <div class="row"><button id="off" class="b">Turn Oski off</button><button id="reset" class="b danger">Reset</button></div>
+    <p class="hint">Oski v<span id="ver"></span></p>
+  </div>
+  <script src="oski.js"></script>
+  <script src="window.js"></script>
+</body>
+</html>

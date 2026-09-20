@@ -1,0 +1,83 @@
+/* rules.js — how Oski gets hurt and heals. Pure functions, no browser APIs. */
+(function (root) {
+  'use strict';
+
+  // Health per second for each kind of activity.
+  const RATES = {
+    bad:  -100 / (30 * 60),   // 30 minutes on distracting sites kills a healthy Oski
+    idle: -100 / (120 * 60),  // 2 hours of not touching the computer kills him
+    away: 0,                  // browser not focused (you might be reading a book) — nothing happens
+    good: +100 / (90 * 60),   // 90 minutes of real browsing heals him fully
+    off: 0,                   // Oski is switched off
+  };
+
+  const DEFAULT_SITES = [
+    'youtube.com', 'instagram.com', 'reddit.com', 'twitter.com', 'x.com',
+    'royaleapi.com', 'clashroyale.com', 'statsroyale.com', 'tiktok.com',
+  ];
+
+  function defaultState(now) {
+    return {
+      version: 2,
+      enabled: true,
+      health: 100,
+      alive: true,
+      deaths: 0,
+      sites: DEFAULT_SITES.slice(),
+      overlay: true,           // show Oski on every page too, not just in his window
+      notifications: true,
+      activity: { kind: 'good', since: now, host: '' },
+      lastSettle: now,
+      warned: {},              // { '50': true, '20': true } reset on revive
+      diedAt: 0,
+    };
+  }
+
+  function normalizeHost(s) {
+    return String(s || '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/[/?#].*$/, '');
+  }
+
+  function hostOf(url) {
+    try { const u = new URL(url); return /^https?:$/.test(u.protocol) ? u.hostname.toLowerCase().replace(/^www\./, '') : ''; }
+    catch (e) { return ''; }
+  }
+
+  function isBadHost(host, sites) {
+    if (!host) return false;
+    return sites.some(d => host === d || host.endsWith('.' + d));
+  }
+
+  /** Apply the time since the last settle at the current activity's rate. Returns events. */
+  function settle(state, now) {
+    const events = [];
+    const dt = Math.max(0, now - (state.lastSettle || now)) / 1000;
+    state.lastSettle = now;
+    if (!state.enabled || !state.alive || dt === 0) return events;
+    const kind = state.activity.kind;
+    const before = state.health;
+    state.health = Math.max(0, Math.min(100, state.health + RATES[kind] * dt));
+    for (const mark of [50, 20]) {
+      if (before > mark && state.health <= mark && !state.warned[mark]) { state.warned[mark] = true; events.push({ type: 'warn', mark, host: state.activity.host }); }
+    }
+    if (state.health <= 0) {
+      state.alive = false; state.diedAt = now; state.deaths += 1;
+      events.push({ type: 'died', host: state.activity.host, kind });
+    }
+    return events;
+  }
+
+  /** Switch activity (settling first so the old one is charged correctly). */
+  function setActivity(state, kind, host, now) {
+    const events = settle(state, now);
+    if (state.activity.kind !== kind || state.activity.host !== host) state.activity = { kind, since: now, host: host || '' };
+    return events;
+  }
+
+  function revive(state, now) {
+    state.health = 100; state.alive = true; state.warned = {}; state.lastSettle = now; state.diedAt = 0;
+  }
+
+  const Rules = { RATES, DEFAULT_SITES, defaultState, normalizeHost, hostOf, isBadHost, settle, setActivity, revive };
+  if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
+  root.Rules = Rules;
+})(typeof globalThis !== 'undefined' ? globalThis : this);
