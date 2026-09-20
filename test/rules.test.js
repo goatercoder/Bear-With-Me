@@ -91,3 +91,21 @@ test('injury stages get worse as health drops and the grids stay valid', () => {
   }
   assert.ok(prevRed > 30, 'the dead Oski should be very bloody');
 });
+
+test('a dragged position is kept on screen and survives a resize', () => {
+  // 900x600 viewport, Oski is 90x78
+  const fit = (p) => Rules.clampPos(p, 900, 600, 90, 78);
+  assert.deepEqual(fit({ rx: 0.5, ty: 0.5 }), { rx: 0.5, ty: 0.5 });
+  // dragged past the left edge → clamped so he stays fully visible
+  assert.equal(fit({ rx: 5, ty: 0 }).rx, (900 - 90) / 900);
+  assert.equal(fit({ rx: 0, ty: 9 }).ty, (600 - 78) / 600);
+  // dragged past the right/top edge
+  assert.deepEqual(fit({ rx: -3, ty: -3 }), { rx: 0, ty: 0 });
+  // junk falls back to the default corner
+  assert.deepEqual(fit(null), { rx: 0.01, ty: 0.02 });
+  assert.deepEqual(fit({ rx: 'x', ty: undefined }), { rx: 0.01, ty: 0.02 });
+  // the same fractions land at the matching spot on a smaller window
+  const p = fit({ rx: 0.25, ty: 0.5 });
+  assert.deepEqual(Rules.clampPos(p, 450, 300, 90, 78), { rx: 0.25, ty: 0.5 });
+  assert.deepEqual(Rules.defaultState(T0).pos, { rx: 0.01, ty: 0.02 });
+});

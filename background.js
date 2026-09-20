@@ -157,6 +157,14 @@ async function handle(msg) {
         if ('notifications' in msg) state.notifications = !!msg.notifications;
         return state;
       }).then(() => reclassify());
+    case 'setPos':
+      return withState(async (state) => {
+        // Where Oski was dragged to on a web page — every tab follows.
+        if (msg.pos) state.pos = Rules.clampPos(msg.pos, 1, 1, 0, 0);
+        // Where his own window was dragged to on screen.
+        if (msg.winPos && Number.isFinite(msg.winPos.left)) state.winPos = { left: Math.round(msg.winPos.left), top: Math.round(msg.winPos.top) };
+        return state;
+      });
     case 'fitWindow': {
       if (msg.windowId == null || !api.windows) return { ok: false };
       const patch = {};

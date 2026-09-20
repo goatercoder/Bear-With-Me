@@ -17,11 +17,52 @@
   async function fit() {
     if (!win || pip) return;
     const frameW = Math.max(0, window.outerWidth - window.innerWidth), frameH = Math.max(0, window.outerHeight - window.innerHeight);
-    const el = $('panel').hidden ? $('stage') : $('panel');
-    const width = el.offsetWidth + frameW, height = el.offsetHeight + frameH;
+    const box = $('panel').hidden ? $('stage') : $('panel');
+    const width = box.offsetWidth + frameW, height = box.offsetHeight + frameH;
     const msg = { type: 'fitWindow', windowId: win.id, width, height };
-    if (!parked) { msg.left = Math.max(0, (screen.availLeft || 0) + (screen.availWidth || 1200) - width - 6); msg.top = (screen.availTop || 0) + 6; }
+    if (!parked) {
+      // Use the spot you last dragged him to; otherwise the top-right corner.
+      const saved = state && state.winPos;
+      msg.left = saved ? saved.left : Math.max(0, (screen.availLeft || 0) + (screen.availWidth || 1200) - width - 6);
+      msg.top = saved ? saved.top : (screen.availTop || 0) + 6;
+    }
     try { const r = await send(msg); if (r && r.ok) parked = true; } catch (e) { /* fine */ }
+  }
+
+  // ---- drag Oski to move his window around the screen ------------------------
+  function addWindowDragging() {
+    const stage = $('stage');
+    let drag = null, pending = null, raf = 0;
+    const flush = () => {
+      raf = 0;
+      if (!pending || !win) return;
+      send({ type: 'fitWindow', windowId: win.id, left: pending.left, top: pending.top }).catch(() => {});
+    };
+    stage.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0 || pip || e.target === $('gear') || e.target === $('pin')) return;
+      // Where the pointer sits inside the window frame, so the cursor keeps its grip.
+      drag = { pointerId: e.pointerId, offX: e.screenX - window.screenX, offY: e.screenY - window.screenY, moved: false };
+      stage.classList.add('dragging');
+      try { stage.setPointerCapture(e.pointerId); } catch (err) { /* fine */ }
+      e.preventDefault();
+    });
+    stage.addEventListener('pointermove', (e) => {
+      if (!drag || e.pointerId !== drag.pointerId) return;
+      const left = Math.round(e.screenX - drag.offX), top = Math.round(e.screenY - drag.offY);
+      if (Math.abs(left - window.screenX) > 3 || Math.abs(top - window.screenY) > 3) drag.moved = true;
+      pending = { left: Math.max(0, left), top: Math.max(0, top) };
+      if (!raf) raf = requestAnimationFrame(flush);
+    });
+    const end = async (e) => {
+      if (!drag || (e && e.pointerId !== drag.pointerId)) return;
+      const moved = drag.moved;
+      stage.classList.remove('dragging');
+      drag = null;
+      if (moved) { parked = true; if (pending) send({ type: 'setPos', winPos: pending }).catch(() => {}); }
+      else if (state && !state.alive) { state = await send({ type: 'revive' }); render(); }
+    };
+    stage.addEventListener('pointerup', end);
+    stage.addEventListener('pointercancel', end);
   }
 
   function describe(s) {
@@ -29,7 +70,7 @@
     if (!s.alive) return `Oski is dead · click him to revive (${s.deaths} death${s.deaths === 1 ? '' : 's'})`;
     const pct = Math.ceil(s.health), k = s.activity.kind;
     const doing = k === 'bad' ? `the Tree is killing him on ${s.activity.host}` : k === 'idle' ? 'idle… he is fading' : k === 'away' ? 'waiting' : s.health < 100 ? 'healing' : 'happy';
-    return `${pct}% · ${doing}`;
+    return `${pct}% · ${doing}` + (pip ? '' : ' · drag to move');
   }
 
   function layout() {
@@ -80,6 +121,7 @@
     pip.document.body.style.cssText = 'margin:0;background:#0b0d14;overflow:hidden;display:grid;place-items:center;height:100vh';
     pip.document.body.appendChild(stage);
     $('pin').textContent = '↩'; $('pin').title = 'Back to the normal window';
+    $('tip').textContent = 'Drag the bar at the top of this window to move Oski';
     // the floating window is visible, so its timers are never throttled — poll from there
     pipTimer = pip.setInterval(refresh, 1000);
     pip.addEventListener('pagehide', () => {
@@ -101,10 +143,7 @@
     fit();
     setInterval(refresh, 1000);
     api.storage.onChanged.addListener((ch, area) => { if (area === 'local' && ch.oski && ch.oski.newValue) { state = ch.oski.newValue; render(); } });
-    $('stage').addEventListener('click', async (e) => {
-      if (e.target === $('gear') || e.target === $('pin')) return;
-      if (state && !state.alive) { state = await send({ type: 'revive' }); render(); }
-    });
+    addWindowDragging();
     $('pin').addEventListener('click', () => { if (pip) pip.close(); else pin(); });
     $('gear').addEventListener('click', () => { if (pip) pip.close(); showPanel(true); });
     $('back').addEventListener('click', () => showPanel(false));

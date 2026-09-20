@@ -34,10 +34,14 @@ Click the toolbar icon once. A little window with Oski appears in the top-right 
 starts watching what you do. Oski also shows up in the top-right corner of every web page (so he bleeds right
 there on YouTube). Hover him to see his health and what's hurting him.
 
+**Move him out of the way:** drag Oski. On a web page he goes anywhere you drop him, and the spot is
+remembered for every tab and every site. In his own little window, dragging him moves that window around your
+screen. A plain click (no dragging) still revives him when he's dead.
+
 **Keep him on top of everything:** hover Oski in his window and click **📌**. He moves into a floating
 picture-in-picture window that stays above every other window and tab, even the new-tab page or another app.
 His small window minimises itself (it has to stay open for the floating one to exist). Click ↩ or close the
-floating window to go back. Needs Chrome 116+.
+floating window to go back. Drag that floating window by the bar along its top edge. Needs Chrome 116+.
 
 ## The gear
 

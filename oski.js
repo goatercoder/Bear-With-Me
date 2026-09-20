@@ -87,34 +87,34 @@
     [21, 4, 'rrrrrrrrrrrrrrrr'],                           // pool spreads
   ];
 
-  // The Stanford Tree. Shows up to beat Oski while you're on a taboo site.
+  // The Stanford Tree, as a pine: three tiers of boughs, a trunk, and a face.
   const TREE = [
-    '.....ggggg......',
-    '...gggGGGggg....',
-    '..ggGGyGGGGgg...',
-    '.ggGGGGGGGGGgg..',
-    '.gGGwwGGGwwGGg..',
-    '.gGGwkGGGwkGGg..',
-    'ggGGGGGGGGGGGgg.',
-    'gGGyGGrrrrGGGGg.',
-    'gGGGGrRRRRrGyGg.',
-    'gGGGGrRRRRrGGGg.',
-    '.gGGGGrrrrGGGGg.',
-    '.ggGGGGGGGGGgg..',
-    '..ggGGyGGGGgg...',
-    '...ggGGGGGgg....',
-    '....ggGGGgg.....',
-    '.....ggggg......',
-    '......ttt.......',
-    '.....tTTTt......',
-    '.....tTTTt......',
-    '.....tTTTt......',
-    '.....tTTTt......',
-    '....ttTTTtt.....',
-    '...tttttttttt...',
-    '................',
+    '.......gg.......',
+    '......gGGg......',
+    '.....gGGGGg.....',
+    '....gGGGGGGg....',
+    '......gGGg......',
+    '.....gGGGGg.....',
+    '....gGGrGGGg....',
+    '...gGGGGGGGGg...',
+    '.....gGGGGg.....',
+    '....gGGGGGGg....',
+    '...gGGGGGGGGg...',
+    '..gGGwwGGwwGGg..',
+    '..gGGwkGGwkGGg..',
+    '.gGGGGGGGGGGGGg.',
+    '.gGGGrrrrrrGGGg.',
+    '.gGGGrRRRRrGGGg.',
+    'gGGGGrRRRRrGGGGg',
+    'gGGGGGrrrrGGGGGg',
+    'gGGrGGGGGGGGrGGg',
+    '.gggggggggggggg.',
+    '.......tT.......',
+    '.......tT.......',
+    '.......tT.......',
+    '....tttttttt....',
   ];
-  const TREE_PALETTE = { g: '#1d5c2a', G: '#2e8b3d', w: '#ffffff', k: '#111111', r: '#8c0c0c', R: '#d3202a', t: '#4a2f14', T: '#7a4a1f', y: '#fdb515' };
+  const TREE_PALETTE = { g: '#14532d', G: '#2e8b3d', w: '#ffffff', k: '#111111', r: '#8c1515', R: '#d3202a', t: '#4a2f14', T: '#7a4a1f' };
 
   /** Index of the worst stage reached at this health (0 = unharmed, 4 = dying). */
   function stageFor(health) {
@@ -128,7 +128,7 @@
     return n === 0 ? 'healthy' : STAGES[n - 1].name;
   }
 
-  /** Compose the 24×24 grid for a given health/alive state. */
+  /** Compose the 24x24 grid for a given health/alive state. */
   function compose(health, alive) {
     const grid = BASE.map(r => r.split(''));
     const apply = (patches) => { for (const [row, col, chars] of patches) for (let i = 0; i < chars.length; i++) grid[row][col + i] = chars[i]; };

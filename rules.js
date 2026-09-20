@@ -32,6 +32,8 @@
       lastSettle: now,
       warned: {},              // { '50': true, '20': true } reset on revive
       lastHitAt: 0,            // for the blood-burst animation
+      pos: { rx: 0.01, ty: 0.02 },  // where Oski sits on a web page, as fractions of the viewport
+      winPos: null,            // where you dragged his own little window to, in screen pixels
       diedAt: 0,
     };
   }
@@ -90,7 +92,22 @@
     state.health = 100; state.alive = true; state.warned = {}; state.lastSettle = now; state.diedAt = 0;
   }
 
-  const Rules = { RATES, ENTRY_HIT, DEFAULT_SITES, defaultState, normalizeHost, hostOf, isBadHost, settle, setActivity, revive };
+  /**
+   * Keep a dragged position on screen. `rx` is the gap from the right edge and
+   * `ty` the gap from the top, both as fractions of the viewport, so the spot
+   * survives a window resize or a different monitor.
+   */
+  function clampPos(pos, viewW, viewH, oskiW, oskiH) {
+    const rx = Number(pos ? pos.rx : NaN), ty = Number(pos ? pos.ty : NaN);
+    const maxRx = viewW > 0 ? Math.max(0, (viewW - oskiW) / viewW) : 0;
+    const maxTy = viewH > 0 ? Math.max(0, (viewH - oskiH) / viewH) : 0;
+    return {
+      rx: Math.min(maxRx, Math.max(0, Number.isFinite(rx) ? rx : 0.01)),
+      ty: Math.min(maxTy, Math.max(0, Number.isFinite(ty) ? ty : 0.02)),
+    };
+  }
+
+  const Rules = { RATES, ENTRY_HIT, DEFAULT_SITES, clampPos, defaultState, normalizeHost, hostOf, isBadHost, settle, setActivity, revive };
   if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
   root.Rules = Rules;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

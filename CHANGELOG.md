@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.0 — 2026-09-20
+- The Stanford Tree is now a pine: three tiers of boughs, a trunk, and the same angry face.
+- Drag Oski anywhere on a web page; the spot is remembered and followed by every tab.
+- Drag Oski inside his own window to move that window around the screen; the spot is remembered.
+- Fixed a missing saved position snapping him flush into the corner instead of the default spot.
+
 ## 2.1.0 — 2026-09-20
 - 📌 always-on-top mode: Oski moves into a floating picture-in-picture window above every other window.
 - Instant 8% blood hit the moment you land on a taboo site; 20 minutes there now kills him.
