@@ -1,4 +1,4 @@
-# Oski — don't let him die 🐻🩸
+# Don't let Oski die! 🐻🩸
 
 A tiny 8-bit **Oski** (the Cal bear) lives in the **top-right corner** of your browser. That's it. That's the
 extension.
