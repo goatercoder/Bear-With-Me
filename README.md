@@ -1,20 +1,3 @@
-# Oski — don't let him die 🐻🩸
-
-A tiny 8-bit **Oski** (the Cal bear) lives in the **top-right corner** of your browser. That's it. That's the
-extension.
-
-- **Work** in the browser and Oski is fine. If he was hurt, he slowly heals (about 90 minutes to full health).
-- **Open** YouTube, Instagram, Reddit, Twitter/X or a Clash Royale site and he loses **8% on the spot** in a burst
-  of blood, and the **Stanford Tree** walks in and beats him for as long as you stay. Blood pours from his eyes
-  first, then his ear tears and his mouth bleeds, then an eye goes and bone shows through a paw, then his skull
-  is exposed and an arm is gone. **20 minutes** on those sites kills a healthy Oski.
-- **Go idle** (no keyboard or mouse for a minute) and he fades too, more slowly: about 2 hours to die.
-- **Switch to another app** (browser not focused) and nothing happens either way.
-- When he dies he lies there grey with a fly on him. Click him (or the toolbar icon) to bring him back. He keeps
-  count of how many times you've killed him.
-
-No timers, no stats, no XP. Just keep him alive.
-
 <p align="center"><img src="icons/icon128.png" width="96" alt="Oski"></p>
 
 <h1 align="center">Oski</h1>
@@ -27,7 +10,7 @@ No timers, no stats, no XP. Just keep him alive.
   <a href="https://github.com/goatercoder/Focusling/actions/workflows/test.yml"><img alt="Tests" src="https://github.com/goatercoder/Focusling/actions/workflows/test.yml/badge.svg"></a>
   <a href="https://github.com/goatercoder/Focusling/actions/workflows/package.yml"><img alt="Package" src="https://github.com/goatercoder/Focusling/actions/workflows/package.yml/badge.svg"></a>
   <img alt="Manifest V3" src="https://img.shields.io/badge/manifest-v3-blue">
-  <img alt="Version" src="https://img.shields.io/badge/version-2.0.0-informational">
+  <img alt="Version" src="https://img.shields.io/badge/version-2.1.0-informational">
   <img alt="Platforms" src="https://img.shields.io/badge/browsers-Chrome%20%7C%20Edge%20%7C%20Brave%20%7C%20Arc%20%7C%20Firefox-lightgrey">
 </p>
 
@@ -35,32 +18,31 @@ No timers, no stats, no XP. Just keep him alive.
 
 ## Overview
 
-**Keep him on top of everything:** hover Oski in his window and click **📌**. He moves into a floating
-picture-in-picture window that stays above every other window and tab, even the new-tab page or another app.
-His small window minimises itself (it has to stay open for the floating one to exist). Click ↩ or close the
-floating window to go back. Needs Chrome 116+.
-
-## The gear
+Oski is a deliberately minimal accountability mechanic. There are no timers, points, streaks or dashboards. A single pixel-art bear lives in a small window and, optionally, in the top-right corner of every page you visit. The extension continuously classifies what you are doing in the browser and charges time against the bear's health at a rate that depends on that classification:
 
 | Activity | Detection | Effect |
 |---|---|---|
 | **Working** | Focused browser window, active tab not on the block-list | Heals: 90 minutes from zero to full |
-| **Distracted** | Active tab matches a block-listed domain | Hurts: 30 minutes from full health to death |
+| **Distracted** | Active tab matches a block-listed domain | An immediate 8 % hit on arrival (and again on hopping to another listed site), then 20 minutes from full health to death while the Stanford Tree beats him |
 | **Idle** | No keyboard or mouse input for 60 seconds | Hurts slowly: 2 hours to death |
 | **Away** | Browser not the focused application | Neutral |
 
-Damage is rendered as five cumulative injury stages drawn directly onto the sprite (bruised → bleeding → broken → dying → dead), so the cost of a doomscrolling session is visible on the page where it is happening. A dead Oski is revived with a click; the extension keeps count.
+Damage is rendered as cumulative injury stages drawn directly onto the sprite (bleeding eyes → bleeding → broken → dying → dead), with a blood burst on every hit, so the cost of a doomscrolling session is visible on the page where it is happening. A dead Oski is revived with a click; the extension keeps count.
 
 Everything runs locally. No accounts, no servers, no telemetry.
 
 ## Features
 
-- Chrome only adds content scripts to pages loaded after an extension is installed or reloaded, so Oski
-  injects himself into every open tab when installed. If he's missing from a page, reload it.
-- The corner window is a normal browser window and can end up behind others; use 📌 to float him on top.
-- Tracking uses the browser's idle detector and the active tab of the focused browser window. Nothing leaves
-  your computer; state lives in `chrome.storage.local`.
-- All the injuries are pixel-art patches in `oski.js` (`STAGES`). Rates are in `rules.js` (`RATES`).
+- **Continuous activity classification** from window focus, active-tab URL and the browser's idle detector, re-evaluated on every tab, window and idle event plus a 30-second alarm.
+- **Rate-based health model**: elapsed time is settled at the previous activity's rate whenever activity changes, so switching tabs never loses or double-counts time. Landing on a listed site applies an instant entry hit on top of the drain.
+- **The Stanford Tree**: an antagonist sprite walks in and beats Oski for as long as a listed site stays in the foreground, in both the window and the on-page overlay.
+- **Cumulative injury rendering**: a 24×24 base sprite with patch overlays per stage, shared by the window, the overlay and the icon generator.
+- **Always-on-top mode**: a 📌 control moves Oski into a Document Picture-in-Picture window that floats above every other window and application (Chrome 116+).
+- **Corner window** opened from the toolbar action and parked in the top-right of the screen; hover for health and cause.
+- **Page overlay** injected as a content script inside a closed shadow root, so host-page styles cannot affect it and it cannot affect them. On install or reload the overlay is injected into every already-open tab, not only pages loaded afterwards.
+- **Configurable block-list** (defaults: YouTube, Instagram, Reddit, Twitter/X, TikTok and Clash Royale sites) with subdomain matching and host normalisation.
+- **Notifications** at 50 %, 20 % and death, each naming the site responsible; toolbar badge shows remaining health, `RIP`, or `off`.
+- **Kill switch and reset** behind a gear control in the window.
 
 ## Installation
 
@@ -76,18 +58,16 @@ No build step is required; the extension loads directly from source.
 
 ### Firefox
 
-Open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on…** and select `manifest.json`. Temporary add-ons are removed on restart; for a permanent install run `npm run package` and sign the archive via [addons.mozilla.org](https://addons.mozilla.org/developers/).
+Open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on…** and select `manifest.json`. Temporary add-ons are removed on restart; for a permanent install run `npm run package` and sign the archive via [addons.mozilla.org](https://addons.mozilla.org/developers/). Always-on-top mode relies on Document Picture-in-Picture and is Chromium-only.
 
 A store-ready `focusling.zip` is produced by CI on every push and attached to tagged releases.
 
 ## Usage
 
-Click the toolbar icon. A small window with Oski appears in the top-right corner of the screen and monitoring begins. Hover Oski to see his health and what is affecting it. Hover to reveal the **⚙** control, which opens:
+Click the toolbar icon. A small window with Oski appears in the top-right corner of the screen and monitoring begins. Hover Oski to see his health and what is affecting it. Hovering also reveals two controls:
 
-- the list of sites that hurt him, one per line
-- whether to also show him on every web page
-- desktop notifications on or off
-- turn off / reset
+- **📌** floats Oski in an always-on-top picture-in-picture window; the small window minimises itself while pinned (it has to stay open for the floating one to exist). Click ↩ or close the floating window to return.
+- **⚙** opens the settings panel: the list of sites that hurt him (one per line), whether to also show him on every web page, desktop notifications on or off, and turn off / reset.
 
 If he dies, click him in the window, on any page, or click the toolbar icon to revive him.
 
@@ -95,11 +75,11 @@ If he dies, click him in the window, on any page, or click the toolbar icon to r
 
 ```
 manifest.json    MV3 manifest: service worker (Chrome) / event page (Firefox), content script, permissions
-rules.js         Health model as pure functions: rates, default state, host matching, settle / setActivity / revive. Unit-tested.
-background.js    Long-lived state owner: activity classification, alarm-driven settling, notifications, badge, window management
-oski.js          24×24 sprite, injury-stage patches, stage selection and animated canvas renderer
-window.html/js   The corner window and its settings panel
-overlay.js       Content script: Oski in a closed shadow root at the top-right of every page
+rules.js         Health model as pure functions: rates, entry hit, default state, host matching, settle / setActivity / revive. Unit-tested.
+background.js    Long-lived state owner: activity classification, alarm-driven settling, notifications, badge, window management, injection into open tabs
+oski.js          24×24 sprite, injury-stage patches, the Stanford Tree, stage selection and animated canvas renderer
+window.html/js   The corner window, its settings panel and the picture-in-picture pin
+overlay.js       Content script: Oski (and the Tree) in a closed shadow root at the top-right of every page
 test/            node --test suites for rules.js and the sprite stages
 scripts/         make-icons.py (renders the sprite to PNG icons), package.sh (store-ready zip)
 ```
@@ -107,9 +87,10 @@ scripts/         make-icons.py (renders the sprite to PNG icons), package.sh (st
 Design notes:
 
 - **Single writer.** All state lives under one key in `chrome.storage.local`; only the background worker mutates it, through a serialised load → mutate → persist queue, so concurrent messages from the window, overlay, alarms and tab events cannot race.
-- **Settle-before-switch.** `setActivity()` charges the elapsed interval at the old rate before recording the new activity, keeping the health integral exact regardless of event timing.
-- **Pure rules.** `rules.js` has no browser dependencies and is exported via CommonJS for Node's test runner; rates and the default block-list are the only tunables.
+- **Settle-before-switch.** `setActivity()` charges the elapsed interval at the old rate before recording the new activity, keeping the health integral exact regardless of event timing; the entry hit is applied only on a genuine transition onto a listed host.
+- **Pure rules.** `rules.js` has no browser dependencies and is exported via CommonJS for Node's test runner; rates, the entry hit and the default block-list are the only tunables.
 - **Sprite as data.** Injuries are `[row, col, chars]` patches applied cumulatively per stage; tests assert that the grids stay well-formed and that blood never decreases as health falls.
+- **One stage, two hosts.** The window's stage element is moved into the picture-in-picture document when pinned and back when unpinned, so the same canvas and animation loop serve both.
 
 ## Permissions and privacy
 
@@ -118,6 +99,7 @@ Design notes:
 | `storage` | Persist state and settings locally |
 | `alarms` | Settle health every 30 s while no page is open |
 | `tabs`, `host_permissions` | Read the active tab's hostname for classification; inject the overlay |
+| `scripting` | Inject the overlay into tabs that were already open at install or reload |
 | `idle` | Detect keyboard / mouse inactivity |
 | `notifications` | Warn at 50 %, 20 % and death |
 
@@ -135,4 +117,4 @@ CI runs the test-suite and a syntax check on every push and publishes a loadable
 
 ## History
 
-Version 1.x was a Pomodoro timer with an XP-driven arena game; 2.0 replaced it with the single-companion model described above. See [CHANGELOG.md](CHANGELOG.md).
+Version 1.x was a Pomodoro timer with an XP-driven arena game; 2.0 replaced it with the single-companion model described above, and 2.1 added the entry hit, the Stanford Tree, always-on-top mode and injection into open tabs. See [CHANGELOG.md](CHANGELOG.md).
