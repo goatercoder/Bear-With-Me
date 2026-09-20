@@ -1,3 +1,20 @@
+# Oski — don't let him die 🐻🩸
+
+A tiny 8-bit **Oski** (the Cal bear) lives in the **top-right corner** of your browser. That's it. That's the
+extension.
+
+- **Work** in the browser and Oski is fine. If he was hurt, he slowly heals (about 90 minutes to full health).
+- **Open** YouTube, Instagram, Reddit, Twitter/X or a Clash Royale site and he loses **8% on the spot** in a burst
+  of blood, and the **Stanford Tree** walks in and beats him for as long as you stay. Blood pours from his eyes
+  first, then his ear tears and his mouth bleeds, then an eye goes and bone shows through a paw, then his skull
+  is exposed and an arm is gone. **20 minutes** on those sites kills a healthy Oski.
+- **Go idle** (no keyboard or mouse for a minute) and he fades too, more slowly: about 2 hours to die.
+- **Switch to another app** (browser not focused) and nothing happens either way.
+- When he dies he lies there grey with a fly on him. Click him (or the toolbar icon) to bring him back. He keeps
+  count of how many times you've killed him.
+
+No timers, no stats, no XP. Just keep him alive.
+
 <p align="center"><img src="icons/icon128.png" width="96" alt="Oski"></p>
 
 <h1 align="center">Oski</h1>
@@ -18,7 +35,12 @@
 
 ## Overview
 
-Oski is a deliberately minimal accountability mechanic. There are no timers, points, streaks or dashboards. A single pixel-art bear lives in a small always-on-top window and, optionally, in the top-right corner of every page you visit. The extension continuously classifies what you are doing in the browser and charges time against the bear's health at a rate that depends on that classification:
+**Keep him on top of everything:** hover Oski in his window and click **📌**. He moves into a floating
+picture-in-picture window that stays above every other window and tab, even the new-tab page or another app.
+His small window minimises itself (it has to stay open for the floating one to exist). Click ↩ or close the
+floating window to go back. Needs Chrome 116+.
+
+## The gear
 
 | Activity | Detection | Effect |
 |---|---|---|
@@ -33,14 +55,12 @@ Everything runs locally. No accounts, no servers, no telemetry.
 
 ## Features
 
-- **Continuous activity classification** from window focus, active-tab URL and the browser's idle detector, re-evaluated on every tab, window and idle event plus a 30-second alarm.
-- **Rate-based health model**: elapsed time is settled at the previous activity's rate whenever activity changes, so switching tabs never loses or double-counts time.
-- **Cumulative injury rendering**: a 24×24 base sprite with patch overlays per stage, shared by the window, the on-page overlay and the icon generator.
-- **Corner window** opened from the toolbar action and parked in the top-right of the screen; hover for health and cause.
-- **Page overlay** injected as a content script inside a closed shadow root, so host-page styles cannot affect it and it cannot affect them.
-- **Configurable block-list** (defaults: YouTube, Instagram, Reddit, Twitter/X, TikTok and Clash Royale sites) with subdomain matching and host normalisation.
-- **Notifications** at 50 %, 20 % and death, each naming the site responsible; toolbar badge shows remaining health, `RIP`, or `off`.
-- **Kill switch and reset** behind a gear control in the window.
+- Chrome only adds content scripts to pages loaded after an extension is installed or reloaded, so Oski
+  injects himself into every open tab when installed. If he's missing from a page, reload it.
+- The corner window is a normal browser window and can end up behind others; use 📌 to float him on top.
+- Tracking uses the browser's idle detector and the active tab of the focused browser window. Nothing leaves
+  your computer; state lives in `chrome.storage.local`.
+- All the injuries are pixel-art patches in `oski.js` (`STAGES`). Rates are in `rules.js` (`RATES`).
 
 ## Installation
 

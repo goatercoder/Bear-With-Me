@@ -5,10 +5,13 @@
   <title>Oski</title>
   <style>
     html, body { margin: 0; background: #0b0d14; color: #e8ebf7; font: 12px system-ui, sans-serif; overflow: hidden; user-select: none; }
-    #stage { position: relative; width: 116px; height: 116px; display: grid; place-items: center; cursor: pointer; }
+    #stage { position: relative; width: 116px; height: 116px; display: grid; place-items: center; cursor: pointer; transition: width .2s; }
+    #stage.tree { width: 190px; }
     canvas { image-rendering: pixelated; display: block; }
     #tip { position: absolute; left: 0; right: 0; bottom: 2px; text-align: center; font-size: 10px; color: #9aa3c7; opacity: 0; transition: opacity .2s; pointer-events: none; white-space: nowrap; }
     #stage:hover #tip { opacity: 1; }
+    #pin { position: absolute; top: 2px; left: 2px; border: 0; background: transparent; color: #fdb515; font-size: 13px; cursor: pointer; opacity: 0; transition: opacity .2s; padding: 2px 4px; }
+    #stage:hover #pin { opacity: .95; }
     #gear { position: absolute; top: 2px; right: 2px; border: 0; background: transparent; color: #9aa3c7; font-size: 13px; cursor: pointer; opacity: 0; transition: opacity .2s; padding: 2px 4px; }
     #stage:hover #gear { opacity: .9; }
     #panel { padding: 8px; width: 240px; display: flex; flex-direction: column; gap: 6px; }
@@ -26,6 +29,7 @@
   <div id="stage">
     <canvas id="oski" width="104" height="104"></canvas>
     <div id="tip"></div>
+    <button id="pin" title="Keep Oski on top of everything (picture-in-picture)">📌</button>
     <button id="gear" title="Sites & options">⚙</button>
   </div>
   <div id="panel" hidden>
@@ -33,7 +37,7 @@
     <textarea id="sites" spellcheck="false"></textarea>
     <label><input id="overlay" type="checkbox"> Also show Oski on every web page</label>
     <label><input id="notif" type="checkbox"> Notify me when he's dying</label>
-    <p class="hint">30 min on these sites kills him. 2 h idle kills him. Working heals him (90 min to full).</p>
+    <p class="hint">Landing on one of these sites costs him 8% on the spot and the Stanford Tree beats him for 20 min until he's dead. 2 h idle kills him too. Working heals him (90 min to full). 📌 pins him on top of every window.</p>
     <div class="row"><button id="save" class="b primary">Save</button><button id="back" class="b">Back</button></div>
     <div class="row"><button id="off" class="b">Turn Oski off</button><button id="reset" class="b danger">Reset</button></div>
     <p class="hint">Oski v<span id="ver"></span></p>

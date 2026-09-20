@@ -90,7 +90,17 @@ async function ensureAlarm() {
   if (!a) await api.alarms.create(TICK, { periodInMinutes: 0.5 });
 }
 api.alarms.onAlarm.addListener((a) => { if (a.name === TICK) reclassify(); });
-api.runtime.onInstalled.addListener(async () => { await ensureAlarm(); await reclassify(); });
+// Chrome only injects content scripts into pages loaded after the extension was
+// (re)loaded, so put Oski into every tab that is already open.
+async function injectEverywhere() {
+  if (!api.scripting) return;
+  let tabs = [];
+  try { tabs = await api.tabs.query({ url: ['http://*/*', 'https://*/*'] }); } catch (e) { return; }
+  for (const t of tabs) {
+    try { await api.scripting.executeScript({ target: { tabId: t.id }, files: ['oski.js', 'overlay.js'] }); } catch (e) { /* chrome://, store pages, discarded tabs */ }
+  }
+}
+api.runtime.onInstalled.addListener(async () => { await ensureAlarm(); await reclassify(); await injectEverywhere(); });
 api.runtime.onStartup.addListener(async () => { await ensureAlarm(); await reclassify(); });
 ensureAlarm().catch(() => {});
 
@@ -150,6 +160,7 @@ async function handle(msg) {
     case 'fitWindow': {
       if (msg.windowId == null || !api.windows) return { ok: false };
       const patch = {};
+      if (msg.state) patch.state = msg.state; // 'minimized' while pinned on top, 'normal' to bring it back
       for (const k of ['width', 'height', 'left', 'top']) if (Number.isFinite(msg[k])) patch[k] = Math.max(0, Math.round(msg[k]));
       try { await api.windows.update(msg.windowId, patch); return { ok: true }; } catch (e) { return { ok: false }; }
     }
