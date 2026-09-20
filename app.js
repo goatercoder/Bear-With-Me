@@ -352,6 +352,7 @@
     lastLevel = Core.levelForXp(state.pet.xp);
     lastStage = Sprites.stageFor(state.pet.avatar, lastLevel).index;
     $('app').hidden = false;
+    try { $('version').textContent = 'v' + api.runtime.getManifest().version; } catch (e) { /* not in an extension */ }
     await detectWindow();
 
     game = new Game($('arena'));
