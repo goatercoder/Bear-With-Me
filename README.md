@@ -1,119 +1,149 @@
-# Focusling 🐻 — a study pet that fights aliens while you study
+<p align="center"><img src="icons/icon128.png" width="96" alt="Focusling"></p>
 
-Focusling is a tiny browser extension (Chrome, Edge, Brave, Firefox) that puts a pixel-art pet in your
-toolbar. Start a **Pomodoro focus block** and your pet flies into the arena, blasting aliens, bats, UFOs and
-the occasional mothership. Every minute you study earns XP, and XP makes your pet **stronger**: more damage,
-faster shots, more bullets, new avatars.
+<h1 align="center">Focusling</h1>
 
-Stop studying for too long and your pet **starves**. Keep the streak alive.
+<p align="center">
+  A Manifest V3 browser extension that pairs a Pomodoro session timer with a persistent pixel-art companion whose progression is driven entirely by verified focus time.
+</p>
 
-The default pet is **Osci Bear**. **Nyan Cat** (with rainbow trail) is unlocked from the start; six more pets
-unlock as you level up.
+<p align="center">
+  <a href="https://github.com/goatercoder/Focusling/actions/workflows/test.yml"><img alt="Tests" src="https://github.com/goatercoder/Focusling/actions/workflows/test.yml/badge.svg"></a>
+  <a href="https://github.com/goatercoder/Focusling/actions/workflows/package.yml"><img alt="Package" src="https://github.com/goatercoder/Focusling/actions/workflows/package.yml/badge.svg"></a>
+  <img alt="Manifest V3" src="https://img.shields.io/badge/manifest-v3-blue">
+  <img alt="Version" src="https://img.shields.io/badge/version-1.1.0-informational">
+  <img alt="Platforms" src="https://img.shields.io/badge/browsers-Chrome%20%7C%20Edge%20%7C%20Brave%20%7C%20Arc%20%7C%20Firefox-lightgrey">
+</p>
 
-<p align="center"><img src="icons/icon128.png" width="96" alt="Osci Bear"></p>
+---
 
-## Install (30 seconds, no build step)
+## Overview
 
-**Chrome / Edge / Brave / Arc**
+Focusling turns time-boxed study into a progression loop. Starting a focus block deploys your companion into a real-time canvas arena where it auto-engages waves of hostiles; every minute of completed focus is converted into experience, and experience feeds a level curve that governs the companion's damage output, fire rate, projectile count, evolution stage and unlockable roster.
 
-1. Download this repo (green *Code* button → *Download ZIP*) and unzip it, or `git clone` it.
-2. Open `chrome://extensions`, switch on **Developer mode** (top right).
-3. Click **Load unpacked** and pick the folder that **directly contains `manifest.json`**.
-   ⚠ A GitHub ZIP unpacks into a folder *inside* a folder of the same name
-   (`Focusling-…/Focusling-…/manifest.json`). Pick the inner one, otherwise Chrome says
-   "Manifest file is missing or unreadable".
-4. Pin Focusling from the puzzle-piece menu so the pet is always one click away.
+The loop is deliberately asymmetric: progress is earned only through timed focus, and neglect has a cost. A companion that goes unfed for too long loses health and can be lost. Streaks, daily quests, battle reports and a memorial system round out the reinforcement design.
 
-**Firefox**
+Everything runs locally. There is no account, no backend and no telemetry.
+
+## Features
+
+- **Pomodoro engine** with configurable focus, short-break and long-break durations, auto-start breaks and a four-block long-break cycle.
+- **Real-time arena** rendered on `<canvas>`: weighted enemy spawns (alien, bat, UFO, eye), periodic bosses, combo tracking and a charged manual shot on click.
+- **Level-driven combat stats**: damage, fire interval and bullet count are pure functions of level, and enemy scaling keeps difficulty proportional.
+- **Companion lifecycle**: HP decay after a grace period, starvation, streak shields, memorial and revival with generation tracking.
+- **Five-stage evolution** for the default companion, plus seven unlockable avatars.
+- **Daily quests** (deterministic per calendar day), **battle reports** after each block, a **7-day focus chart** and lifetime stats.
+- **Distraction shield**: an optional block-list that redirects configured domains to an interstitial page during focus blocks.
+- **Toolbar badge** showing remaining minutes with colour-coded state, desktop notifications and an optional chiptune cue.
+- **Mini window**: the toolbar action opens a compact always-available window docked to the top-right of the screen; a full-tab arena is one click away.
+- **Keyboard**: `Space` toggles start / pause / resume, `Esc` closes dialogs.
+
+## Installation
+
+No build step is required; the extension loads directly from source.
+
+### Chrome, Edge, Brave, Arc
+
+1. Download the repository (**Code → Download ZIP**) and extract it, or clone it.
+2. Open `chrome://extensions` and enable **Developer mode**.
+3. Choose **Load unpacked** and select the folder that **directly contains `manifest.json`**.
+   A GitHub ZIP extracts into a nested folder (`Focusling-…/Focusling-…/manifest.json`); pick the inner one.
+4. Pin Focusling from the extensions menu.
+
+### Firefox
 
 1. Open `about:debugging#/runtime/this-firefox`.
-2. Click **Load Temporary Add-on…** and pick `manifest.json` inside the folder.
-   (Temporary add-ons are removed when Firefox restarts; for a permanent install run `npm run package` and
-   sign the zip through [addons.mozilla.org](https://addons.mozilla.org/developers/).)
+2. Choose **Load Temporary Add-on…** and select `manifest.json`.
+   Temporary add-ons are removed on restart. For a permanent install, run `npm run package` and sign the resulting archive via [addons.mozilla.org](https://addons.mozilla.org/developers/).
 
-Click the toolbar icon. A small window with Osci and the arena pops up in the **top-right corner** of your
-screen. Press **▶ Start** and get to work. Everything else (stats, quests, pets, settings) lives behind the
-**⚙** button in that window.
+A pre-built `focusling.zip` is also produced by CI on every push and attached to tagged releases.
 
-## How it works
+## Usage
 
-| Thing | Rule |
+Click the toolbar icon. The mini window shows the arena, the timer and a **Start** button. Type what you are working on in the task line and press **Enter** or **Start**. Stats, quests, companions and settings live behind the **⚙** control.
+
+## Mechanics
+
+| System | Rule |
 |---|---|
-| Pomodoro | 25 min focus → 5 min break, long 15 min break after every 4 focus blocks. All adjustable. Breaks can auto-start. |
-| XP | **2 XP per minute** studied + **10 XP** for finishing a block + 1 XP per monster your pet defeats. |
-| Level | `level = 1 + √(XP / 40)` — level 2 after your first block, level 5 around 5 hours, level 15 around 65 hours of study. |
-| Power | Damage, fire rate and number of bullets all come from the level. Monsters scale too, so the arena stays fun. |
-| HP | Finishing a block feeds your pet (up to +30 HP). If you don't study for **8 hours** the pet starts losing HP and starves **48 hours** later (both adjustable, or turn decay off). |
-| Evolution | Osci **very slowly evolves**: Cub (Lv 1) → Bear (Lv 5, ~6 h of study) → Scholar (Lv 10, ~27 h) → Knight (Lv 18, ~96 h) → Cosmic (Lv 28, ~243 h). The Pets tab shows the progress to the next form. |
-| Death | A starved pet goes to the memorial 🪦. Revive it as *Osci Bear II* at level 1. Unlocked pets and lifetime stats are kept. |
-| Shields | Every 7-day streak earns a 🛡 shield that saves your pet once. |
-| Streak | Consecutive days with at least one minute of focus. |
-| Daily quests | Three quests a day (sessions, minutes, kills, combo, boss) for bonus XP. |
-| Battle report | When a block ends you get a report: minutes, XP, monsters fought, level-ups, unlocks. |
+| Pomodoro | 25 min focus → 5 min break; 15 min long break after every 4 focus blocks. All durations adjustable. |
+| Experience | 2 XP per focused minute, +10 XP per completed block, +1 XP per enemy defeated. Early stops award partial XP without block credit. |
+| Level curve | `level = 1 + √(XP / 40)`. Level 2 after the first block, ~5 h for level 5, ~65 h for level 15. |
+| Combat | Damage, fire interval and projectile count derive from level; enemy HP scales in step. |
+| Health | Completing a block feeds the companion (up to +30 HP). After 8 idle hours HP drains linearly; starvation occurs 48 h later. Both thresholds are adjustable and decay can be disabled. |
+| Evolution | Cub (Lv 1) → Bear (Lv 5) → Scholar (Lv 10) → Knight (Lv 18) → Cosmic (Lv 28). |
+| Shields | Every 7-day streak grants a shield that absorbs one starvation event. |
+| Streak | Consecutive calendar days with at least one focused minute. |
+| Quests | Three deterministic daily quests (sessions, minutes, kills, combo, boss) with XP rewards. |
+| Memorial | A starved companion is recorded in the memorial; revival starts a new generation at level 1 while preserving unlocks and lifetime stats. |
 
-### Pets
+### Companions
 
-| Pet | Unlocks at |
+| Companion | Unlock |
 |---|---|
-| Osci (default, evolves through 5 forms) | level 1 |
-| Nyan Cat | level 1 |
-| Gloop the slime | level 3 |
-| Quackers the duck | level 5 |
-| Boo the ghost | level 7 |
-| Ribbit the frog | level 9 |
-| Bolt the robot | level 12 |
-| Ember the dragon | level 15 |
+| Osci (default, five evolution stages) | Level 1 |
+| Nyan Cat (rainbow trail) | Level 1 |
+| Gloop the slime | Level 3 |
+| Quackers the duck | Level 5 |
+| Boo the ghost | Level 7 |
+| Ribbit the frog | Level 9 |
+| Bolt the robot | Level 12 |
+| Ember the dragon | Level 15 |
 
-Click the pet's name to rename it. Click the avatar (or ⚙ → Pets) to switch pets and see evolution progress.
+Click the companion's name to rename it; click the avatar to switch companions and view evolution progress.
 
-### Other features
-
-- **Mini window** — the toolbar icon opens one small window (arena + timer + Start) parked in the top-right
-  corner; clicking the icon again just focuses it. Opening ⚙ grows the window to show the drawer, closing it
-  shrinks it back.
-- **Big arena tab** (⚙ → Settings → *Open big arena*) — a large version you can keep on a second monitor.
-- **Click the arena** during focus for a charged **POW** shot (1.5 s cooldown). Kills build a combo; let a monster
-  slip past and the combo resets.
-- **Distraction shield** — optional. During a focus block, listed sites (YouTube, Reddit, TikTok, …) redirect to
-  a page where your pet tells you to get back to work. Edit the list in ⚙ Settings.
-- **Toolbar badge** shows minutes left (red = focus, green = break, amber = paused, `RIP` = uh oh).
-- **Desktop notifications** and a little chiptune when a block ends. Both can be turned off.
-- **Task line** — type what you're working on; press Enter to start.
-- **Keyboard**: `Space` starts / pauses / resumes, `Esc` closes dialogs.
-- **7-day chart** of focus minutes and lifetime stats.
-- All data stays in your browser (`chrome.storage.local`). No accounts, no servers, no tracking.
-
-## Project layout
+## Architecture
 
 ```
-manifest.json   MV3 manifest (Chrome service worker + Firefox event page)
-core.js         game rules — pure functions, unit-tested
-background.js   timer, HP decay, notifications, badge, distraction shield
-sprites.js      pixel art (pets, monsters) as character grids
-game.js         the canvas arena
-app.js          popup / arena UI
-popup.html      the mini window    arena.html   full-tab arena     blocked.html  distraction page
-style.css
-test/           node --test
-scripts/        make-icons.py (renders Osci Bear to PNG), package.sh (zip for store upload)
+manifest.json    MV3 manifest (Chrome service worker + Firefox event page)
+core.js          Game rules as pure functions: XP, levels, decay, streaks, quests, unlocks, migrations. Unit-tested.
+background.js    Long-lived state owner: timer, HP decay, notifications, badge, distraction shield.
+                 All mutations flow through a serialised load → mutate → persist queue.
+game.js          Canvas arena: spawn weights, boss cadence, projectiles, combo tracking.
+sprites.js       Pixel art for companions and enemies as 16×16 character grids with palettes.
+app.js           UI layer for the mini window and full-tab arena; renders state, dispatches commands.
+popup.html       Mini window        arena.html   Full-tab arena        blocked.html   Distraction interstitial
+style.css        Styling
+test/            node --test suites for core.js
+scripts/         make-icons.py (renders the companion sprite to PNG icons), package.sh (store-ready zip)
 ```
 
-Add a pet by drawing a 16×16 grid in `sprites.js` and adding one line to `Core.AVATARS`. Give it a `stages`
-array (like Osci) and it evolves by level.
+Design notes:
+
+- **Single source of truth.** All state lives under one key in `chrome.storage.local`; the background worker is the only writer.
+- **Race-free mutations.** Every state change is queued through `withState()`, so concurrent messages from the popup, alarms and tabs cannot clobber each other.
+- **Forward-compatible persistence.** `Core.migrate()` fills in missing fields on load, so upgrades never reset a companion.
+- **Rules are testable.** `core.js` has no browser dependencies and exports via CommonJS for Node's test runner.
+
+Adding a companion is a matter of drawing a 16×16 grid in `sprites.js` and appending one entry to `Core.AVATARS`; give it a `stages` array to enable evolution.
+
+## Permissions and privacy
+
+| Permission | Purpose |
+|---|---|
+| `storage` | Persist companion state and settings locally |
+| `alarms` | Drive the timer and HP decay while the popup is closed |
+| `notifications` | Announce the end of a block |
+| `tabs` | Open the mini window / arena tab and apply the distraction shield |
+
+No data leaves the browser.
 
 ## Development
 
-```
-npm test              # rules tests
-npm run icons         # regenerate icons from the Osci Bear sprite
-npm run package       # dist/focusling.zip
+```bash
+npm test              # rules test-suite (node --test)
+npm run icons         # regenerate icons from the companion sprite
+npm run package       # build dist/focusling.zip for store submission
 ```
 
-## Ideas for later
+CI runs the test-suite and a syntax check on every push and publishes a loadable zip artifact.
 
-- Pet accessories bought with XP (hats, scarves, laser upgrades)
-- Boss rush mode on long breaks
-- Sync stats between devices with `chrome.storage.sync`
-- Study buddies: share a room code and see friends' pets in the arena
+## Roadmap
+
+- Cosmetic upgrades purchasable with XP
+- Boss-rush mode during long breaks
+- Cross-device sync via `chrome.storage.sync`
+- Shared rooms with friends' companions in the arena
 - Weekly report card and calendar heat-map
-- Sounds/music per pet, more Nyan-style trails
+- Per-companion audio and trail effects
+
+See [CHANGELOG.md](CHANGELOG.md) for release history.
