@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.1.0 — 2026-09-20
+- 📌 always-on-top mode: Oski moves into a floating picture-in-picture window above every other window.
+- Instant 8% blood hit the moment you land on a taboo site; 20 minutes there now kills him.
+- The Stanford Tree appears and beats Oski while you're on a taboo site (blood bursts on every hit).
+- Injuries reordered: blood pours from his eyes first, skull exposed near the end.
+- Oski is injected into already-open tabs on install/reload, so he shows on every page right away.
+
 ## 2.0.0 — 2026-09-20
 - Complete redesign: no arena, timer, XP or stats. Just Oski.
 - New 24×24 8-bit Oski (Cal blue-and-gold sweater) with five cumulative injury stages and a dead state.

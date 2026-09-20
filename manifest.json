@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Oski — don't let him die",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "A tiny 8-bit Oski sits in the top-right corner. Go idle or doomscroll YouTube, Instagram, Reddit, Twitter or Clash Royale and he slowly gets torn apart. Keep working and he heals.",
   "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
   "action": {
@@ -15,7 +15,7 @@
   "content_scripts": [
     { "matches": ["http://*/*", "https://*/*"], "js": ["oski.js", "overlay.js"], "run_at": "document_idle", "all_frames": false }
   ],
-  "permissions": ["storage", "alarms", "tabs", "idle", "notifications"],
+  "permissions": ["storage", "alarms", "tabs", "idle", "notifications", "scripting"],
   "host_permissions": ["http://*/*", "https://*/*"],
   "browser_specific_settings": { "gecko": { "id": "focusling@goatercoder.github.io", "strict_min_version": "121.0" } }
 }

@@ -4,12 +4,14 @@
 
   // Health per second for each kind of activity.
   const RATES = {
-    bad:  -100 / (30 * 60),   // 30 minutes on distracting sites kills a healthy Oski
+    bad:  -100 / (20 * 60),   // 20 minutes on distracting sites kills a healthy Oski
     idle: -100 / (120 * 60),  // 2 hours of not touching the computer kills him
     away: 0,                  // browser not focused (you might be reading a book) — nothing happens
     good: +100 / (90 * 60),   // 90 minutes of real browsing heals him fully
     off: 0,                   // Oski is switched off
   };
+
+  const ENTRY_HIT = 8;        // instant damage the moment you land on a taboo site
 
   const DEFAULT_SITES = [
     'youtube.com', 'instagram.com', 'reddit.com', 'twitter.com', 'x.com',
@@ -29,6 +31,7 @@
       activity: { kind: 'good', since: now, host: '' },
       lastSettle: now,
       warned: {},              // { '50': true, '20': true } reset on revive
+      lastHitAt: 0,            // for the blood-burst animation
       diedAt: 0,
     };
   }
@@ -69,7 +72,17 @@
   /** Switch activity (settling first so the old one is charged correctly). */
   function setActivity(state, kind, host, now) {
     const events = settle(state, now);
-    if (state.activity.kind !== kind || state.activity.host !== host) state.activity = { kind, since: now, host: host || '' };
+    const prev = state.activity;
+    if (prev.kind !== kind || prev.host !== host) {
+      state.activity = { kind, since: now, host: host || '' };
+      // Landing on a taboo site (or hopping to another one) draws blood immediately.
+      if (kind === 'bad' && state.enabled && state.alive && (prev.kind !== 'bad' || prev.host !== host)) {
+        state.health = Math.max(0, state.health - ENTRY_HIT);
+        state.lastHitAt = now;
+        events.push({ type: 'hit', host });
+        if (state.health <= 0) { state.alive = false; state.diedAt = now; state.deaths += 1; events.push({ type: 'died', host, kind }); }
+      }
+    }
     return events;
   }
 
@@ -77,7 +90,7 @@
     state.health = 100; state.alive = true; state.warned = {}; state.lastSettle = now; state.diedAt = 0;
   }
 
-  const Rules = { RATES, DEFAULT_SITES, defaultState, normalizeHost, hostOf, isBadHost, settle, setActivity, revive };
+  const Rules = { RATES, ENTRY_HIT, DEFAULT_SITES, defaultState, normalizeHost, hostOf, isBadHost, settle, setActivity, revive };
   if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
   root.Rules = Rules;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

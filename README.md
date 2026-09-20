@@ -4,9 +4,10 @@ A tiny 8-bit **Oski** (the Cal bear) lives in the **top-right corner** of your b
 extension.
 
 - **Work** in the browser and Oski is fine. If he was hurt, he slowly heals (about 90 minutes to full health).
-- **Doomscroll** on YouTube, Instagram, Reddit, Twitter/X or Clash Royale sites and he gets hurt. First a black
-  eye and a scratch, then bleeding, then bones showing, then he's barely twitching. **30 minutes** on those sites
-  kills a healthy Oski.
+- **Open** YouTube, Instagram, Reddit, Twitter/X or a Clash Royale site and he loses **8% on the spot** in a burst
+  of blood, and the **Stanford Tree** walks in and beats him for as long as you stay. Blood pours from his eyes
+  first, then his ear tears and his mouth bleeds, then an eye goes and bone shows through a paw, then his skull
+  is exposed and an arm is gone. **20 minutes** on those sites kills a healthy Oski.
 - **Go idle** (no keyboard or mouse for a minute) and he fades too, more slowly: about 2 hours to die.
 - **Switch to another app** (browser not focused) and nothing happens either way.
 - When he dies he lies there grey with a fly on him. Click him (or the toolbar icon) to bring him back. He keeps
@@ -33,6 +34,11 @@ Click the toolbar icon once. A little window with Oski appears in the top-right 
 starts watching what you do. Oski also shows up in the top-right corner of every web page (so he bleeds right
 there on YouTube). Hover him to see his health and what's hurting him.
 
+**Keep him on top of everything:** hover Oski in his window and click **📌**. He moves into a floating
+picture-in-picture window that stays above every other window and tab, even the new-tab page or another app.
+His small window minimises itself (it has to stay open for the floating one to exist). Click ↩ or close the
+floating window to go back. Needs Chrome 116+.
+
 ## The gear
 
 Hover Oski in his window and a small ⚙ appears. Behind it:
@@ -47,8 +53,9 @@ The toolbar badge shows his health once he's hurt, `RIP` when he's dead, `off` w
 
 ## Notes
 
-- The corner window is a normal browser window, so it can end up behind other windows. The on-page overlay
-  is there so you still see him while browsing.
+- Chrome only adds content scripts to pages loaded after an extension is installed or reloaded, so Oski
+  injects himself into every open tab when installed. If he's missing from a page, reload it.
+- The corner window is a normal browser window and can end up behind others; use 📌 to float him on top.
 - Tracking uses the browser's idle detector and the active tab of the focused browser window. Nothing leaves
   your computer; state lives in `chrome.storage.local`.
 - All the injuries are pixel-art patches in `oski.js` (`STAGES`). Rates are in `rules.js` (`RATES`).

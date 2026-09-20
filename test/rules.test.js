@@ -6,17 +6,25 @@ require('../oski.js'); const Oski = globalThis.Oski;
 const T0 = 1_800_000_000_000;
 const min = (n) => n * 60000;
 
-test('30 minutes of doomscrolling kills a healthy Oski', () => {
+test('landing on a taboo site draws blood instantly, then 20 minutes kills him', () => {
   const s = Rules.defaultState(T0);
-  Rules.setActivity(s, 'bad', 'youtube.com', T0);
-  let ev = Rules.settle(s, T0 + min(15));
+  let ev = Rules.setActivity(s, 'bad', 'youtube.com', T0);
+  assert.equal(s.health, 100 - Rules.ENTRY_HIT);
+  assert.equal(s.lastHitAt, T0);
+  assert.deepEqual(ev, [{ type: 'hit', host: 'youtube.com' }]);
+  Rules.setActivity(s, 'bad', 'youtube.com', T0 + 1000);            // same site: no second hit
+  assert.ok(s.health > 100 - 2 * Rules.ENTRY_HIT);
+  Rules.setActivity(s, 'bad', 'reddit.com', T0 + 2000);             // hopping to another taboo site: hit again
+  assert.ok(s.health < 100 - 2 * Rules.ENTRY_HIT + 0.1);
+  s.health = 100; s.lastSettle = T0;
+  ev = Rules.settle(s, T0 + min(10));
   assert.ok(Math.abs(s.health - 50) < 0.01, `health ${s.health}`);
-  assert.deepEqual(ev, [{ type: 'warn', mark: 50, host: 'youtube.com' }]);
-  ev = Rules.settle(s, T0 + min(24));
+  assert.deepEqual(ev, [{ type: 'warn', mark: 50, host: 'reddit.com' }]);
+  ev = Rules.settle(s, T0 + min(16));
   assert.equal(ev[0].mark, 20);
-  ev = Rules.settle(s, T0 + min(31));
+  ev = Rules.settle(s, T0 + min(21));
   assert.equal(s.alive, false); assert.equal(s.health, 0); assert.equal(s.deaths, 1);
-  assert.equal(ev[0].type, 'died'); assert.equal(ev[0].host, 'youtube.com');
+  assert.equal(ev[0].type, 'died'); assert.equal(ev[0].host, 'reddit.com');
 });
 
 test('idle hurts slowly, away does nothing, good heals', () => {
@@ -37,8 +45,8 @@ test('idle hurts slowly, away does nothing, good heals', () => {
 test('switching activity charges the old one first', () => {
   const s = Rules.defaultState(T0);
   Rules.setActivity(s, 'bad', 'reddit.com', T0);
-  Rules.setActivity(s, 'good', 'github.com', T0 + min(3));
-  assert.ok(Math.abs(s.health - 90) < 0.01);
+  Rules.setActivity(s, 'good', 'github.com', T0 + min(2));
+  assert.ok(Math.abs(s.health - (100 - Rules.ENTRY_HIT - 10)) < 0.01, `health ${s.health}`);
   assert.equal(s.activity.kind, 'good');
 });
 
@@ -68,10 +76,11 @@ test('host matching handles subdomains and normalisation', () => {
 
 test('injury stages get worse as health drops and the grids stay valid', () => {
   assert.equal(Oski.stageName(100, true), 'healthy');
-  assert.equal(Oski.stageName(79, true), 'bruised');
-  assert.equal(Oski.stageName(59, true), 'bleeding');
+  assert.equal(Oski.stageName(84, true), 'bleeding eyes');
+  assert.equal(Oski.stageName(64, true), 'bleeding');
   assert.equal(Oski.stageName(39, true), 'broken');
-  assert.equal(Oski.stageName(19, true), 'dying');
+  assert.equal(Oski.stageName(17, true), 'dying');
+  assert.equal(Oski.TREE.length, 24);
   assert.equal(Oski.stageName(0, false), 'dead');
   let prevRed = -1;
   for (const [h, alive] of [[100, true], [70, true], [50, true], [30, true], [10, true], [0, false]]) {
