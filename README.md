@@ -18,7 +18,10 @@ unlock as you level up.
 
 1. Download this repo (green *Code* button → *Download ZIP*) and unzip it, or `git clone` it.
 2. Open `chrome://extensions`, switch on **Developer mode** (top right).
-3. Click **Load unpacked** and pick the `Focusling` folder.
+3. Click **Load unpacked** and pick the folder that **directly contains `manifest.json`**.
+   ⚠ A GitHub ZIP unpacks into a folder *inside* a folder of the same name
+   (`Focusling-…/Focusling-…/manifest.json`). Pick the inner one, otherwise Chrome says
+   "Manifest file is missing or unreadable".
 4. Pin Focusling from the puzzle-piece menu so the pet is always one click away.
 
 **Firefox**
