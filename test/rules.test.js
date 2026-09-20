@@ -63,14 +63,14 @@ test('nothing happens while Oski is off or dead; revive restores him', () => {
 });
 
 test('host matching handles subdomains and normalisation', () => {
-  const sites = Rules.DEFAULT_SITES;
+  const sites = ['youtube.com', 'reddit.com', 'royaleapi.com', 'x.com'];
   assert.equal(Rules.isBadHost(Rules.hostOf('https://www.youtube.com/watch?v=1'), sites), true);
   assert.equal(Rules.isBadHost(Rules.hostOf('https://m.reddit.com/r/x'), sites), true);
   assert.equal(Rules.isBadHost(Rules.hostOf('https://royaleapi.com/player/abc'), sites), true);
   assert.equal(Rules.isBadHost(Rules.hostOf('https://x.com/home'), sites), true);
-  assert.equal(Rules.isBadHost(Rules.hostOf('https://notx.com/'), sites), false);
+  assert.equal(Rules.isBadHost(Rules.hostOf('https://notx.com/'), sites), false);   // not a subdomain
   assert.equal(Rules.isBadHost(Rules.hostOf('https://docs.google.com/'), sites), false);
-  assert.equal(Rules.isBadHost(Rules.hostOf('chrome://extensions'), sites), false);
+  assert.equal(Rules.isBadHost(Rules.hostOf('chrome://extensions'), sites), false); // not a web page
   assert.equal(Rules.normalizeHost(' https://www.Twitch.tv/some/path '), 'twitch.tv');
 });
 
@@ -108,4 +108,41 @@ test('a dragged position is kept on screen and survives a resize', () => {
   const p = fit({ rx: 0.25, ty: 0.5 });
   assert.deepEqual(Rules.clampPos(p, 450, 300, 90, 78), { rx: 0.25, ty: 0.5 });
   assert.deepEqual(Rules.defaultState(T0).pos, { rx: 0.01, ty: 0.02 });
+});
+
+test('the default taboo sites are the four that matter', () => {
+  assert.deepEqual(Rules.DEFAULT_SITES, ['clashroyaleapi.com', 'reddit.com', 'youtube.com', 'instagram.com']);
+  const s = Rules.defaultState(T0);
+  assert.equal(s.onlyOnTaboo, false);
+  for (const url of ['https://www.youtube.com/watch?v=1', 'https://old.reddit.com/r/x', 'https://instagram.com/p/1', 'https://clashroyaleapi.com/x']) {
+    assert.equal(Rules.isBadHost(Rules.hostOf(url), s.sites), true, url);
+  }
+  for (const url of ['https://x.com/home', 'https://tiktok.com/', 'https://docs.google.com/']) {
+    assert.equal(Rules.isBadHost(Rules.hostOf(url), s.sites), false, url);
+  }
+});
+
+test('upgrading keeps the pet, and only swaps an untouched site list', () => {
+  const old = {
+    version: 2, enabled: true, health: 42.5, alive: true, deaths: 3,
+    sites: Rules.LEGACY_DEFAULT_SITES.slice(), overlay: true, notifications: false,
+    activity: { kind: 'bad', since: T0, host: 'youtube.com' }, lastSettle: T0, warned: { 50: true }, diedAt: 0,
+  };
+  const m = Rules.migrate(old, T0);
+  assert.equal(m.health, 42.5);
+  assert.equal(m.deaths, 3);
+  assert.equal(m.notifications, false);
+  assert.deepEqual(m.warned, { 50: true });
+  assert.equal(m.version, 3);
+  assert.equal(m.onlyOnTaboo, false);            // new field gets its default
+  assert.deepEqual(m.pos, { rx: 0.01, ty: 0.02 });
+  assert.deepEqual(m.sites, Rules.DEFAULT_SITES); // never edited → moved to the new list
+
+  const mine = Rules.migrate({ version: 2, sites: ['espn.com'], health: 10, deaths: 1 }, T0);
+  assert.deepEqual(mine.sites, ['espn.com']);     // edited → left alone
+  assert.equal(mine.health, 10);
+  assert.equal(mine.alive, true);
+
+  assert.deepEqual(Rules.migrate(null, T0).sites, Rules.DEFAULT_SITES);
+  assert.deepEqual(Rules.migrate(undefined, T0).health, 100);
 });

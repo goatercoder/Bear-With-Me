@@ -6,7 +6,7 @@
   // Elements are cached once: the stage moves into another document when pinned,
   // so document.getElementById would stop finding them.
   const el = {};
-  for (const id of ['stage', 'oski', 'tip', 'pin', 'gear', 'panel', 'sites', 'overlay', 'notif', 'off', 'save', 'back', 'reset', 'ver']) el[id] = document.getElementById(id);
+  for (const id of ['stage', 'oski', 'tip', 'pin', 'gear', 'panel', 'sites', 'overlay', 'onlyTaboo', 'notif', 'off', 'save', 'back', 'reset', 'ver']) el[id] = document.getElementById(id);
   const $ = (id) => el[id];
   const SCALE = 4, H = 26 * SCALE;
   let state = null, win = null, parked = false, pip = null, pipTimer = 0;
@@ -102,6 +102,7 @@
     if (show) {
       $('sites').value = state.sites.join('\n');
       $('overlay').checked = !!state.overlay; $('notif').checked = !!state.notifications;
+      $('onlyTaboo').checked = !!state.onlyOnTaboo; $('onlyTaboo').disabled = !state.overlay;
       $('off').textContent = state.enabled ? 'Turn Oski off' : 'Turn Oski on';
     }
     fit();
@@ -146,9 +147,10 @@
     addWindowDragging();
     $('pin').addEventListener('click', () => { if (pip) pip.close(); else pin(); });
     $('gear').addEventListener('click', () => { if (pip) pip.close(); showPanel(true); });
+    $('overlay').addEventListener('change', () => { $('onlyTaboo').disabled = !$('overlay').checked; });
     $('back').addEventListener('click', () => showPanel(false));
     $('save').addEventListener('click', async () => {
-      state = await send({ type: 'settings', sites: $('sites').value.split(/[\n,]+/), overlay: $('overlay').checked, notifications: $('notif').checked });
+      state = await send({ type: 'settings', sites: $('sites').value.split(/[\n,]+/), overlay: $('overlay').checked, onlyOnTaboo: $('onlyTaboo').checked, notifications: $('notif').checked });
       showPanel(false);
     });
     $('off').addEventListener('click', async () => { state = await send({ type: 'toggle' }); showPanel(false); render(); });

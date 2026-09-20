@@ -13,20 +13,25 @@
 
   const ENTRY_HIT = 8;        // instant damage the moment you land on a taboo site
 
-  const DEFAULT_SITES = [
+  const DEFAULT_SITES = ['clashroyaleapi.com', 'reddit.com', 'youtube.com', 'instagram.com'];
+
+  // The list shipped before 2.3.0. If someone still has exactly this, they never
+  // edited it, so an upgrade quietly moves them to the new defaults.
+  const LEGACY_DEFAULT_SITES = [
     'youtube.com', 'instagram.com', 'reddit.com', 'twitter.com', 'x.com',
     'royaleapi.com', 'clashroyale.com', 'statsroyale.com', 'tiktok.com',
   ];
 
   function defaultState(now) {
     return {
-      version: 2,
+      version: 3,
       enabled: true,
       health: 100,
       alive: true,
       deaths: 0,
       sites: DEFAULT_SITES.slice(),
-      overlay: true,           // show Oski on every page too, not just in his window
+      overlay: true,           // show Oski on web pages, not just in his window
+      onlyOnTaboo: false,      // ...and if this is on, only while you're on a taboo site
       notifications: true,
       activity: { kind: 'good', since: now, host: '' },
       lastSettle: now,
@@ -107,7 +112,25 @@
     };
   }
 
-  const Rules = { RATES, ENTRY_HIT, DEFAULT_SITES, clampPos, defaultState, normalizeHost, hostOf, isBadHost, settle, setActivity, revive };
+  function sameList(a, b) {
+    return Array.isArray(a) && a.length === b.length && a.every((v, i) => v === b[i]);
+  }
+
+  /**
+   * Bring a stored state up to date without losing the pet. Unknown-but-missing
+   * fields get their defaults; everything already there is kept.
+   */
+  function migrate(state, now) {
+    if (!state || typeof state !== 'object') return defaultState(now);
+    const fresh = defaultState(now);
+    for (const k of Object.keys(fresh)) if (state[k] === undefined || state[k] === null) state[k] = fresh[k];
+    if (sameList(state.sites, LEGACY_DEFAULT_SITES)) state.sites = DEFAULT_SITES.slice();
+    state.pos = clampPos(state.pos, 1, 1, 0, 0);
+    state.version = fresh.version;
+    return state;
+  }
+
+  const Rules = { RATES, ENTRY_HIT, DEFAULT_SITES, LEGACY_DEFAULT_SITES, clampPos, migrate, defaultState, normalizeHost, hostOf, isBadHost, settle, setActivity, revive };
   if (typeof module !== 'undefined' && module.exports) module.exports = Rules;
   root.Rules = Rules;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

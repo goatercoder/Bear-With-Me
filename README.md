@@ -4,7 +4,7 @@ A tiny 8-bit **Oski** (the Cal bear) lives in the **top-right corner** of your b
 extension.
 
 - **Work** in the browser and Oski is fine. If he was hurt, he slowly heals (about 90 minutes to full health).
-- **Open** YouTube, Instagram, Reddit, Twitter/X or a Clash Royale site and he loses **8% on the spot** in a burst
+- **Open** YouTube, Reddit, Instagram or clashroyaleapi.com and he loses **8% on the spot** in a burst
   of blood, and the **Stanford Tree** walks in and beats him for as long as you stay. Blood pours from his eyes
   first, then his ear tears and his mouth bleeds, then an eye goes and bone shows through a paw, then his skull
   is exposed and an arm is gone. **20 minutes** on those sites kills a healthy Oski.
@@ -47,9 +47,11 @@ floating window to go back. Drag that floating window by the bar along its top e
 
 Hover Oski in his window and a small ⚙ appears. Behind it:
 
-- the list of sites that hurt him (one per line; defaults are YouTube, Instagram, Reddit, Twitter, X,
-  royaleapi.com, clashroyale.com, statsroyale.com, TikTok),
-- whether to show him on every web page as well as in his window,
+- the list of sites that hurt him, one per line. Out of the box: **clashroyaleapi.com, reddit.com,
+  youtube.com, instagram.com**. Subdomains count, so `m.reddit.com` and `old.reddit.com` are covered,
+- whether to show him on web pages at all, and **…only when I'm on a taboo site** — tick that and he stays out
+  of sight everywhere else, appearing the moment you open one of the sites above. His own little window always
+  shows him either way,
 - desktop notifications at 50%, 20% and death,
 - turn him off / reset.
 

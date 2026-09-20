@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.3.0 — 2026-09-20
+- New option: show Oski on web pages **only when you're on a taboo site**. He stays hidden everywhere else.
+- Default taboo sites are now clashroyaleapi.com, reddit.com, youtube.com and instagram.com.
+- Upgrades keep your pet: health, deaths and a site list you edited all survive. An untouched list moves to
+  the new defaults.
+- The page overlay now shares the real host-matching code instead of a copy, and decides per page rather
+  than per browser.
+
 ## 2.2.0 — 2026-09-20
 - The Stanford Tree is now a pine: three tiers of boughs, a trunk, and the same angry face.
 - Drag Oski anywhere on a web page; the spot is remembered and followed by every tab.

@@ -16,8 +16,7 @@ function withState(fn) {
   const run = chain.then(async () => {
     const got = await api.storage.local.get(KEY);
     const now = Date.now();
-    let state = got[KEY];
-    if (!state || state.version !== 2) state = Rules.defaultState(now);
+    let state = Rules.migrate(got[KEY], now);
     const result = await fn(state, now);
     await api.storage.local.set({ [KEY]: state });
     updateBadge(state);
@@ -97,7 +96,7 @@ async function injectEverywhere() {
   let tabs = [];
   try { tabs = await api.tabs.query({ url: ['http://*/*', 'https://*/*'] }); } catch (e) { return; }
   for (const t of tabs) {
-    try { await api.scripting.executeScript({ target: { tabId: t.id }, files: ['oski.js', 'overlay.js'] }); } catch (e) { /* chrome://, store pages, discarded tabs */ }
+    try { await api.scripting.executeScript({ target: { tabId: t.id }, files: ['rules.js', 'oski.js', 'overlay.js'] }); } catch (e) { /* chrome://, store pages, discarded tabs */ }
   }
 }
 api.runtime.onInstalled.addListener(async () => { await ensureAlarm(); await reclassify(); await injectEverywhere(); });
@@ -154,6 +153,7 @@ async function handle(msg) {
       return withState(async (state) => {
         if (Array.isArray(msg.sites)) state.sites = msg.sites.map(Rules.normalizeHost).filter(Boolean).slice(0, 200);
         if ('overlay' in msg) state.overlay = !!msg.overlay;
+        if ('onlyOnTaboo' in msg) state.onlyOnTaboo = !!msg.onlyOnTaboo;
         if ('notifications' in msg) state.notifications = !!msg.notifications;
         return state;
       }).then(() => reclassify());

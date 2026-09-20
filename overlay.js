@@ -39,28 +39,28 @@
    *  Tree can appear beside him without pushing him off the screen. */
   function place() {
     if (!host || drag) return;
-    const p = Rules_clamp(state && state.pos);
+    const p = fitPos(state && state.pos);
     host.style.right = Math.round(p.rx * window.innerWidth) + 'px';
     host.style.top = Math.round(p.ty * window.innerHeight) + 'px';
   }
 
-  // A tiny copy of Rules.clampPos — content scripts don't load rules.js.
-  function Rules_clamp(pos) {
-    const w = window.innerWidth, h = window.innerHeight;
-    const ow = (canvas && canvas.width) || 90;
-    const rx = Number(pos ? pos.rx : NaN), ty = Number(pos ? pos.ty : NaN);
-    const maxRx = w > 0 ? Math.max(0, (w - ow) / w) : 0;
-    const maxTy = h > 0 ? Math.max(0, (h - H) / h) : 0;
-    return {
-      rx: Math.min(maxRx, Math.max(0, Number.isFinite(rx) ? rx : 0.01)),
-      ty: Math.min(maxTy, Math.max(0, Number.isFinite(ty) ? ty : 0.02)),
-    };
+  const fitPos = (pos) => Rules.clampPos(pos, window.innerWidth, window.innerHeight, (canvas && canvas.width) || 90, H);
+
+  /** Is THIS page one of the taboo sites? Asked per page, not per browser. */
+  function tabooHere() {
+    return !!(state && Rules.isBadHost(Rules.hostOf(location.href), state.sites || []));
+  }
+
+  /** Should he be drawn over this page at all? */
+  function visible() {
+    if (!state || !state.enabled || !state.overlay) return false;
+    return state.onlyOnTaboo ? tabooHere() : true;
   }
 
   function addDragging() {
     box.addEventListener('pointerdown', (e) => {
       if (e.button !== 0) return;
-      const p = Rules_clamp(state && state.pos);
+      const p = fitPos(state && state.pos);
       drag = { pointerId: e.pointerId, startX: e.clientX, startY: e.clientY, rx: p.rx, ty: p.ty, moved: false };
       box.classList.add('dragging');
       try { box.setPointerCapture(e.pointerId); } catch (err) { /* fine */ }
@@ -71,7 +71,7 @@
       const dx = e.clientX - drag.startX, dy = e.clientY - drag.startY;
       if (Math.abs(dx) > 3 || Math.abs(dy) > 3) drag.moved = true;
       // dragging right shrinks the gap from the right edge
-      const next = Rules_clamp({ rx: drag.rx - dx / window.innerWidth, ty: drag.ty + dy / window.innerHeight });
+      const next = fitPos({ rx: drag.rx - dx / window.innerWidth, ty: drag.ty + dy / window.innerHeight });
       host.style.right = Math.round(next.rx * window.innerWidth) + 'px';
       host.style.top = Math.round(next.ty * window.innerHeight) + 'px';
       drag.next = next;
@@ -100,7 +100,7 @@
     if (document.hidden) return;
     try { state = await api.runtime.sendMessage({ type: 'get' }); } catch (e) { return; }
     if (!state || state.error) return;
-    const show = state.enabled && state.overlay;
+    const show = visible();
     if (show && !host) mount();
     if (host) {
       host.style.display = show ? '' : 'none';

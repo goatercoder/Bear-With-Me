@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Oski — don't let him die",
-  "version": "2.2.0",
-  "description": "A tiny 8-bit Oski sits in the top-right corner. Go idle or doomscroll YouTube, Instagram, Reddit, Twitter or Clash Royale and he slowly gets torn apart. Keep working and he heals.",
+  "version": "2.3.0",
+  "description": "A tiny 8-bit Oski sits in the corner of your browser. Open YouTube, Reddit, Instagram or Clash Royale and the Stanford Tree tears him apart. Keep working and he heals.",
   "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
   "action": {
     "default_title": "Oski — click to start (and to bring him back)",
@@ -13,7 +13,7 @@
     "scripts": ["rules.js", "background.js"]
   },
   "content_scripts": [
-    { "matches": ["http://*/*", "https://*/*"], "js": ["oski.js", "overlay.js"], "run_at": "document_idle", "all_frames": false }
+    { "matches": ["http://*/*", "https://*/*"], "js": ["rules.js", "oski.js", "overlay.js"], "run_at": "document_idle", "all_frames": false }
   ],
   "permissions": ["storage", "alarms", "tabs", "idle", "notifications", "scripting"],
   "host_permissions": ["http://*/*", "https://*/*"],
